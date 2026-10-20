@@ -1,0 +1,16 @@
+{
+  "name": "Astro Dev Environment (Node 24)",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24-bullseye",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "astro-build.astro-vscode",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig",
+        "bradlc.vscode-tailwindcss"
+      ]
+    }
+  },
+  "remoteUser": "node"
+}
