@@ -27,3 +27,4 @@ pnpm-debug.log*
 # editor / agent local state
 .codex/
 .claude/
+.aider*
