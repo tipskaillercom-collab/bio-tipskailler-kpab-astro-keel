@@ -34,14 +34,14 @@ const { Content } = await render(entry);
       <div class="action-row">
         {
           entry.data.link && (
-            <a class="button" href={entry.data.link}>
+            <a class="button" href={entry.data.link} target="_blank" rel="noopener noreferrer">
               {t('work.visit')}
             </a>
           )
         }
         {
           entry.data.repo && (
-            <a class="text-link" href={entry.data.repo}>
+            <a class="text-link" href={entry.data.repo} target="_blank" rel="noopener noreferrer">
               {t('work.repository')}
             </a>
           )
