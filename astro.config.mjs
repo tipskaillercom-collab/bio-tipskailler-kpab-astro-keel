@@ -4,6 +4,18 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import { unified } from '@astrojs/markdown-remark';
 import { remarkReadingTime } from './remark-reading-time.mjs';
+import { loadEnv } from 'vite';
+
+// Nạp các biến từ file .env vào môi trường
+const {
+  PUBLIC_APP_ENV,
+  PUBLIC_APP_PRODUCTION_URL,
+  PUBLIC_APP_PRODUCTION_BASE,
+  PUBLIC_APP_LOCAL_URL,
+  PUBLIC_APP_LOCAL_BASE,
+} = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), 'PUBLIC_');
+
+const isProd = PUBLIC_APP_ENV === 'production';
 
 // https://astro.build/config
 export default defineConfig({
@@ -13,8 +25,8 @@ export default defineConfig({
   // or a `<user>.github.io` root site.
   // site: 'https://kpab.github.io',
   // base: '/astro-keel',
-  site: 'http://localhost:4321',
-  base: '/',
+  site: isProd ? PUBLIC_APP_PRODUCTION_URL : PUBLIC_APP_LOCAL_URL,
+  base: isProd ? PUBLIC_APP_PRODUCTION_BASE : PUBLIC_APP_LOCAL_BASE,
   integrations: [mdx(), sitemap()],
   markdown: {
     processor: unified({
