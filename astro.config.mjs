@@ -5,6 +5,8 @@ import sitemap from '@astrojs/sitemap';
 import { unified } from '@astrojs/markdown-remark';
 import { remarkReadingTime } from './remark-reading-time.mjs';
 import { loadEnv } from 'vite';
+import fs from 'node:fs';
+import path from 'node:path';
 
 // Nạp các biến từ file .env vào môi trường
 const {
@@ -16,6 +18,17 @@ const {
 } = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), 'PUBLIC_');
 
 const isProd = PUBLIC_APP_ENV === 'production';
+
+// Đọc và parse file cấu hình headers tự động
+const headersFilePath = path.resolve('./security-headers.json');
+let securityHeaders = {}; // Hoặc bạn có thể dùng: /** @type {import('node:http').OutgoingHttpHeaders} */ ({});
+
+try {
+  const fileContent = fs.readFileSync(headersFilePath, 'utf-8');
+  securityHeaders = JSON.parse(fileContent);
+} catch (error) {
+  console.warn('Không tìm thấy file security-headers.json, bỏ qua headers local dev.');
+}
 
 // https://astro.build/config
 export default defineConfig({
@@ -50,4 +63,7 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    headers: /** @type {import('node:http').OutgoingHttpHeaders} */ (securityHeaders)
+  }
 });
