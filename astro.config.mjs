@@ -12,7 +12,7 @@ const {
   PUBLIC_APP_PRODUCTION_URL,
   PUBLIC_APP_PRODUCTION_BASE,
   PUBLIC_APP_LOCAL_URL,
-  PUBLIC_APP_LOCAL_BASE
+  PUBLIC_APP_LOCAL_BASE,
 } = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), 'PUBLIC_');
 
 const isProd = PUBLIC_APP_ENV === 'production';
