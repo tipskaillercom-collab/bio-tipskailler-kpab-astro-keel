@@ -14,5 +14,5 @@
   },
   "remoteUser": "node",
   "forwardPorts": [4321],
-  "postCreateCommand": "echo 'alias dev=\"npm run dev -- --host\"' >> ~/.bashrc && echo 'alias preview=\"npm run preview -- --host\"' >> ~/.bashrc && echo 'alias check=\"npm run check\"' >> ~/.bashrc && echo 'alias build-all=\"npm run build && npm run postbuild\"' >> ~/.bashrc"
+  "postCreateCommand": "curl -LsSf https://aider.chat/install.sh | sh && echo 'alias dev=\"npm run dev -- --host\"' >> ~/.bashrc && echo 'alias preview=\"npm run preview -- --host\"' >> ~/.bashrc && echo 'alias check=\"npm run check\"' >> ~/.bashrc && echo 'alias build-all=\"npm run build && npm run postbuild\"' >> ~/.bashrc"
 }
