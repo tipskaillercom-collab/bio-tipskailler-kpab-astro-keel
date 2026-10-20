@@ -1,7 +1,7 @@
 # Security Audit & Content Security Policy (CSP) Report
 
 - **Ngày thực hiện:** 2026-10-21
-- **Tên miền mục tiêu:** `bio.tipskailler.com`
+- **Tên miền mục tiêu:** `[your-domain.com]`
 - **Môi trường triển khai:** HestiaCP (Nginx Server-level) + Astro SSG
 
 ---
@@ -36,11 +36,11 @@ Báo cáo này đánh giá việc tải các tài nguyên nội bộ và ngoại
 ## 3. Cấu hình HTTP Security Headers & CSP trên Nginx (HestiaCP)
 
 Để cấu hình bảo mật không bị ghi đè khi HestiaCP rebuild domain, tạo hoặc chỉnh sửa file cấu hình tùy biến:
-- **Đường dẫn file trên server:** `/home/tips_dev/conf/web/bio.tipskailler.com/nginx.conf_security`
+- **Đường dẫn file trên server:** `/home/[username]/conf/web/[your-domain.com]/nginx.conf_security`
 
 ```nginx
 # ==========================================
-# HTTP Security Headers cho bio.tipskailler.com
+# HTTP Security Headers cho [your-domain.com]
 # ==========================================
 
 # 1. HTTP Strict Transport Security (HSTS)
@@ -85,17 +85,22 @@ add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsaf
 
 1. Đăng nhập SSH vào server HestiaCP và cập nhật nội dung vào file:
    ```bash
-   nano /home/tips_dev/conf/web/bio.tipskailler.com/nginx.conf_security
+   nano /home/[username]/conf/web/[your-domain.com]/nginx.conf_security
    ```
-2. Kiểm tra cú pháp cấu hình Nginx:
+2. Include file trên vào /home/[username]/conf/web/[your-domain.com]/nginx.hsts.conf
+   ```bash
+   # add_header Strict-Transport-Security "max-age=31536000;" always;
+   include /home/[username]/conf/web/[your-domain.com]/nginx.conf_security;
+   ```
+3. Kiểm tra cú pháp cấu hình Nginx:
    ```bash
    nginx -t
    ```
-3. Khởi động lại hoặc reload Nginx:
+4. Khởi động lại hoặc reload Nginx:
    ```bash
    systemctl reload nginx
    ```
-4. Kiểm tra headers thực tế bằng lệnh curl:
+5. Kiểm tra headers thực tế bằng lệnh curl:
    ```bash
-   curl -I https://bio.tipskailler.com
+   curl -I https://[your-domain.com]
    ```
