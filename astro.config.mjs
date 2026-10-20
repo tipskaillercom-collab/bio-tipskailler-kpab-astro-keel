@@ -11,8 +11,10 @@ export default defineConfig({
   // For a GitHub Pages project site, `site` is the user/org domain and `base`
   // is the repository name. Drop `base` (or set it to '/') for a custom domain
   // or a `<user>.github.io` root site.
-  site: 'https://kpab.github.io',
-  base: '/astro-keel',
+  // site: 'https://kpab.github.io',
+  // base: '/astro-keel',
+  site: 'http://localhost:4321',
+  base: '/',
   integrations: [mdx(), sitemap()],
   markdown: {
     processor: unified({
@@ -27,6 +29,13 @@ export default defineConfig({
       },
       defaultColor: false,
       wrap: true,
+    },
+  },
+  vite: {
+    server: {
+      watch: {
+        usePolling: true, // Ép Vite dùng phương pháp polling để bắt file thay đổi trong Docker
+      },
     },
   },
 });
