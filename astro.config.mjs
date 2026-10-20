@@ -31,4 +31,11 @@ export default defineConfig({
       wrap: true,
     },
   },
+  vite: {
+    server: {
+      watch: {
+        usePolling: true, // Ép Vite dùng phương pháp polling để bắt file thay đổi trong Docker
+      },
+    },
+  },
 });
