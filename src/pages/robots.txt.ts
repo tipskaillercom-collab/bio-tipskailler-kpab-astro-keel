@@ -17,4 +17,4 @@ Sitemap: ${sitemapURL}
       'Content-Type': 'text/plain; charset=utf-8',
     },
   });
-};
+}

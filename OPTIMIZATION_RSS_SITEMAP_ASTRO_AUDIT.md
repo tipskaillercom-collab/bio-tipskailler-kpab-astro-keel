@@ -5,6 +5,7 @@ Tài liệu này tổng hợp chi tiết quá trình kiểm tra, cấu hình và
 ---
 
 ## 1. Mục tiêu tối ưu
+
 - Cấu hình tích hợp sitemap tự động thông qua `@astrojs/sitemap` tương thích với cấu trúc URL và routing của dự án.
 - Tự động sinh file `robots.txt` động (`src/pages/robots.txt.ts`) chứa đường dẫn chính xác tới `sitemap-index.xml`, thích ứng linh hoạt theo cấu hình môi trường và tên miền.
 - Chuẩn hóa RSS Feed (`src/pages/rss.xml.ts`):
@@ -18,6 +19,7 @@ Tài liệu này tổng hợp chi tiết quá trình kiểm tra, cấu hình và
 ## 2. Quá trình kiểm tra chi tiết từng thành phần
 
 ### 2.1. Cấu hình Sitemap (`astro.config.mjs`)
+
 - Tích hợp chính thức `sitemap()` từ `@astrojs/mdx` và `@astrojs/sitemap`.
 - Xác định trường `site` và `base` linh hoạt thông qua biến môi trường nạp từ Vite:
   - Môi trường Production: sử dụng `PUBLIC_APP_PRODUCTION_URL` và `PUBLIC_APP_PRODUCTION_BASE`.
@@ -25,6 +27,7 @@ Tài liệu này tổng hợp chi tiết quá trình kiểm tra, cấu hình và
 - Khi build production, Astro tự động quét toàn bộ routes tĩnh để sinh ra file chỉ mục `sitemap-index.xml` và các file sitemap con.
 
 ### 2.2. Tự động hóa tệp robots.txt (`src/pages/robots.txt.ts`)
+
 - Thay vì sử dụng file tĩnh trong thư mục `public/`, dự án sử dụng API endpoint động `src/pages/robots.txt.ts` với hàm `GET(context: APIContext)`.
 - **Logic hoạt động:**
   - Lấy thông tin URL gốc trực tiếp từ `context.site` (hoặc fallback về domain production chính thức `https://[your-domain.com]`).
@@ -32,6 +35,7 @@ Tài liệu này tổng hợp chi tiết quá trình kiểm tra, cấu hình và
   - Sinh nội dung cho phép tất cả bot thu thập dữ liệu hợp lệ (`Allow: /`) và công khai đường dẫn `Sitemap`.
 
 ### 2.3. Tối ưu hóa nguồn cấp dữ liệu RSS (`src/pages/rss.xml.ts`)
+
 - Tận dụng hàm `getCollection('blog')` từ Content Layer API.
 - **Tiêu chuẩn xử lý:**
   - Lọc bỏ các bản nháp: `({ data }) => !data.draft`.
@@ -44,6 +48,7 @@ Tài liệu này tổng hợp chi tiết quá trình kiểm tra, cấu hình và
 ## 3. Các thay đổi và cấu hình cụ thể
 
 ### 3.1. Cấu hình sinh robots.txt động (`src/pages/robots.txt.ts`)
+
 ```typescript
 import type { APIContext } from 'astro';
 import { withBase } from '../lib/url';
@@ -67,6 +72,7 @@ Sitemap: ${sitemapURL}
 ```
 
 ### 3.2. Cấu hình RSS Feed chuẩn SEO (`src/pages/rss.xml.ts`)
+
 ```typescript
 import rss from '@astrojs/rss';
 import type { APIContext } from 'astro';
@@ -95,6 +101,7 @@ export async function GET(context: APIContext) {
 ---
 
 ## 4. Tóm tắt kết quả đạt được
+
 1. **Khả năng lập chỉ mục (Indexability):** Các bot tìm kiếm (Googlebot, Bingbot,...) luôn được cung cấp sơ đồ trang web cập nhật nhất tại `/robots.txt` dẫn tới `/sitemap-index.xml`.
 2. **Khả năng phân phối nội dung (Content Syndication):** Người dùng và các feed reader nhận được dữ liệu bài viết mới nhất tức thì, không bị lỗi sai lệch domain hay lộ các bài viết đang ở trạng thái nháp.
 3. **Tính nhất quán giữa các môi trường:** Việc liên kết URL trong sitemap và RSS tự động thích ứng chuẩn xác dù chạy trên localhost, staging hay production.

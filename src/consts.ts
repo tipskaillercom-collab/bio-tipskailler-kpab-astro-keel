@@ -14,7 +14,8 @@ export const SITE = {
   title: 'Tipskailler - Personal Bio & Tech Showcase',
   /** Default meta description for pages that don't set their own. */
   // description = "Kết nối cùng Tipskailler. Khám phá góc nhìn lập trình, ghi chép công nghệ, bài luận và các dự án cá nhân được xây dựng trên nền tảng Astro Keel.",
-  description: 'Connect with Tipskailler. Explore developer insights, tech notes, essays, and personal projects built with Astro Keel.',
+  description:
+    'Connect with Tipskailler. Explore developer insights, tech notes, essays, and personal projects built with Astro Keel.',
   /** Description of the RSS feed at /rss.xml. */
   // rssDescription: 'Ghi chép, bài luận và nhật ký cập nhật của Tipskailler, tối ưu bởi Astro Keel.',
   rssDescription: 'Notes, essays, and release logs by Tipskailler, powered by Astro Keel.',
@@ -43,7 +44,11 @@ export interface SocialLink {
 /** Social profiles rendered as inline SVG icons in the footer.
  *  Add or remove entries here — no template edits needed. */
 export const SOCIAL_LINKS: readonly SocialLink[] = [
-  { label: 'GitHub', href: 'https://github.com/tipskaillercom-collab/bio-tipskailler-kpab-astro-keel', icon: 'github' },
+  {
+    label: 'GitHub',
+    href: 'https://github.com/tipskaillercom-collab/bio-tipskailler-kpab-astro-keel',
+    icon: 'github',
+  },
   { label: 'Email Contact', href: 'mailto:tipskailler.com@gmail.com', icon: 'email' },
   { label: 'RSS feed', href: '/rss.xml', icon: 'rss' },
 ];
