@@ -10,18 +10,18 @@ export const SITE = {
    *  language's strings while keeping their own date format. */
   locale: 'en',
   /** Site name — used in the header brand, <title>, and og:site_name. */
-  title: 'Astro Keel',
+  title: 'Tipskailler - Personal Bio & Tech Showcase',
   /** Default meta description for pages that don't set their own. */
-  description: 'A minimal, neutral, and modern portfolio and blog theme for Astro.',
+  description: 'Connect with Tipskailler. Explore developer insights, tech notes, essays, and personal projects built with Astro Keel.',
   /** Description of the RSS feed at /rss.xml. */
-  rssDescription: 'Notes, essays, and release logs from Astro Keel.',
+  rssDescription: 'Notes, essays, and release logs by Tipskailler, powered by Astro Keel.',
   /** Default social share image, relative to the site root (see public/). */
   ogImage: '/og-image-en.jpg',
   /** Post author, emitted in JSON-LD BlogPosting structured data.
    *  Leave empty ('') to omit the author field. */
-  author: 'Astro Keel',
+  author: 'Tipskailler',
   /** Footer credit line. */
-  footerText: 'Built with Astro Keel.',
+  footerText: 'Built by Tipskailler & Astro Keel.',
 } as const;
 
 /** Icons bundled with the theme — see `src/components/SocialLinks.astro`. */
