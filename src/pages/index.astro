@@ -78,7 +78,13 @@ const websiteSchema = {
           {works.map((work) => (
             <article class="highlight-card">
               {work.data.thumbnail && (
-                <Image src={work.data.thumbnail} alt="" width={720} height={480} loading="lazy" />
+                <Image
+                  src={work.data.thumbnail}
+                  alt={work.data.title}
+                  width={720}
+                  height={480}
+                  loading="lazy"
+                />
               )}
               <div>
                 <p class="meta">{formatDate(work.data.publishDate, 'short')}</p>
@@ -118,7 +124,13 @@ const websiteSchema = {
           {posts.map((post) => (
             <article class="note-row">
               {post.data.heroImage && (
-                <Image src={post.data.heroImage} alt="" width={320} height={220} loading="lazy" />
+                <Image
+                  src={post.data.heroImage}
+                  alt={post.data.title}
+                  width={320}
+                  height={220}
+                  loading="lazy"
+                />
               )}
               <div>
                 <p class="meta">{formatDate(post.data.publishDate, 'short')}</p>
