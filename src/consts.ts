@@ -16,7 +16,7 @@ export const SITE = {
   /** Description of the RSS feed at /rss.xml. */
   rssDescription: 'Notes, essays, and release logs from Astro Keel.',
   /** Default social share image, relative to the site root (see public/). */
-  ogImage: '/og.jpg',
+  ogImage: '/og-image-en.jpg',
   /** Post author, emitted in JSON-LD BlogPosting structured data.
    *  Leave empty ('') to omit the author field. */
   author: 'Astro Keel',
