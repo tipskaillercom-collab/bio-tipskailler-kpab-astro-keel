@@ -7,7 +7,9 @@
 ---
 
 ## 1. Giới thiệu & Mục tiêu
+
 Báo cáo này đánh giá việc tải các tài nguyên nội bộ và ngoại vi trong dự án Astro SSG, đồng thời cung cấp bộ quy tắc HTTP Security Headers và Content Security Policy (CSP) hoàn chỉnh ở cấp độ máy chủ Nginx (HestiaCP) nhằm phòng tránh các nguy cơ:
+
 - Cross-Site Scripting (XSS)
 - Clickjacking / UI Redressing
 - Reverse Tabnabbing & Data Injection
@@ -18,16 +20,19 @@ Báo cáo này đánh giá việc tải các tài nguyên nội bộ và ngoại
 ## 2. Rà soát tài nguyên ngoại vi trong mã nguồn
 
 ### 2.1. Phông chữ và Stylesheet
+
 - **Nội bộ:** Dự án sử dụng các font self-hosted qua npm (`@fontsource-variable/fraunces`, `@fontsource/public-sans`, `@fontsource-variable/jetbrains-mono`).
 - **Ngoại vi hỗ trợ:** Cấu hình CSP mở rộng hỗ trợ thêm Google Fonts (`https://fonts.googleapis.com`, `https://fonts.gstatic.com`) phục vụ cho các font nhúng bổ sung.
 
 ### 2.2. Scripts & Iframe bên ngoài
+
 - **Giscus Comments (`src/components/Comments.astro`):**
   - Tải script từ: `https://giscus.app/client.js`
   - Nhúng frame thảo luận từ: `https://giscus.app`
   - Kết nối dữ liệu / analytics tới: `https://giscus.app`
 
 ### 2.3. Inline Scripts & Styles
+
 - Astro sử dụng các script nhỏ inline cho việc xử lý theme toggle và View Transitions (`<script is:inline>`).
 - Syntax highlighter (Shiki) và Astro styles sử dụng inline styles, do đó chỉ thị `style-src` cần cờ `'unsafe-inline'`.
 
@@ -36,6 +41,7 @@ Báo cáo này đánh giá việc tải các tài nguyên nội bộ và ngoại
 ## 3. Cấu hình HTTP Security Headers & CSP trên Nginx (HestiaCP)
 
 Để cấu hình bảo mật không bị ghi đè khi HestiaCP rebuild domain, tạo hoặc chỉnh sửa file cấu hình tùy biến:
+
 - **Đường dẫn file trên server:** `/home/[username]/conf/web/[your-domain.com]/nginx.conf_security`
 
 ```nginx
@@ -66,18 +72,18 @@ add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsaf
 
 ## 4. Chi tiết các chỉ thị Content Security Policy
 
-| Chỉ thị | Giá trị cho phép | Mục đích |
-|---|---|---|
-| `default-src` | `'self'` | Mặc định chỉ chấp nhận tài nguyên cùng origin |
-| `script-src` | `'self' 'unsafe-inline' https://giscus.app` | Cho phép script nội bộ, inline script xử lý theme và script Giscus |
-| `style-src` | `'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app` | Cho phép style Astro/Shiki, stylesheet Google Fonts và giao diện Giscus |
-| `img-src` | `'self' data: https:` | Cho phép ảnh nội bộ, SVG base64 và avatar từ GitHub / CDN |
-| `font-src` | `'self' data: https://fonts.gstatic.com` | Cho phép font self-hosted và webfont tải từ Google Fonts |
-| `connect-src` | `'self' https://giscus.app` | Cho phép API call của Giscus bình luận |
-| `frame-src` | `https://giscus.app` | Chỉ cho phép nhúng iframe bình luận từ Giscus |
-| `object-src` | `'none'` | Vô hiệu hoá các plugin Flash/Java applet |
-| `base-uri` | `'self'` | Ngăn chặn tấn công Base Tag Injection |
-| `form-action` | `'self'` | Hạn chế gửi form ra ngoài domain |
+| Chỉ thị       | Giá trị cho phép                                                         | Mục đích                                                                |
+| ------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `default-src` | `'self'`                                                                 | Mặc định chỉ chấp nhận tài nguyên cùng origin                           |
+| `script-src`  | `'self' 'unsafe-inline' https://giscus.app`                              | Cho phép script nội bộ, inline script xử lý theme và script Giscus      |
+| `style-src`   | `'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app` | Cho phép style Astro/Shiki, stylesheet Google Fonts và giao diện Giscus |
+| `img-src`     | `'self' data: https:`                                                    | Cho phép ảnh nội bộ, SVG base64 và avatar từ GitHub / CDN               |
+| `font-src`    | `'self' data: https://fonts.gstatic.com`                                 | Cho phép font self-hosted và webfont tải từ Google Fonts                |
+| `connect-src` | `'self' https://giscus.app`                                              | Cho phép API call của Giscus bình luận                                  |
+| `frame-src`   | `https://giscus.app`                                                     | Chỉ cho phép nhúng iframe bình luận từ Giscus                           |
+| `object-src`  | `'none'`                                                                 | Vô hiệu hoá các plugin Flash/Java applet                                |
+| `base-uri`    | `'self'`                                                                 | Ngăn chặn tấn công Base Tag Injection                                   |
+| `form-action` | `'self'`                                                                 | Hạn chế gửi form ra ngoài domain                                        |
 
 ---
 

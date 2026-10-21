@@ -64,6 +64,6 @@ export default defineConfig({
     },
   },
   server: {
-    headers: /** @type {import('node:http').OutgoingHttpHeaders} */ (securityHeaders)
-  }
+    headers: /** @type {import('node:http').OutgoingHttpHeaders} */ (securityHeaders),
+  },
 });
