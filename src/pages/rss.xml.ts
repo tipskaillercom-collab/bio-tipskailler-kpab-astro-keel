@@ -13,7 +13,7 @@ export async function GET(context: APIContext) {
   return rss({
     title: SITE.title,
     description: SITE.rssDescription,
-    site: context.site ?? 'https://example.com',
+    site: context.site ?? 'https://bio.tipskailler.com',
     // Feed readers use <language> to pick a reading direction and hyphenation.
     customData: `<language>${locale}</language>`,
     items: posts.map((post) => ({
