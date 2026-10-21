@@ -93,7 +93,7 @@ add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsaf
    ```bash
    nano /home/[username]/conf/web/[your-domain.com]/nginx.conf_security
    ```
-2. Include file trên vào /home/[username]/conf/web/[your-domain.com]/nginx.hsts.conf
+2. Include file trên vào `/home/[username]/conf/web/[your-domain.com]/nginx.hsts.conf`
    ```bash
    # add_header Strict-Transport-Security "max-age=31536000;" always;
    include /home/[username]/conf/web/[your-domain.com]/nginx.conf_security;

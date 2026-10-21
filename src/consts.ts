@@ -6,22 +6,28 @@ import type { UIKey } from './i18n/en';
 export const SITE = {
   /** BCP 47 language tag. Picks the UI dictionary in `src/i18n/`, and sets
    *  `<html lang>`, date formatting, and the RSS feed language. Dictionaries
-   *  ship for `en` and `ja`; regional variants like `en-GB` reuse the base
+   *  ship for `en` and `ja`, `vi`; regional variants like `en-GB` reuse the base
    *  language's strings while keeping their own date format. */
   locale: 'en',
   /** Site name — used in the header brand, <title>, and og:site_name. */
-  title: 'Astro Keel',
+  // title = "Tipskailler - Dự Án Kỹ Thuật & Dấu Ấn Cá Nhân",
+  title: 'Tipskailler - Personal Bio & Tech Showcase',
   /** Default meta description for pages that don't set their own. */
-  description: 'A minimal, neutral, and modern portfolio and blog theme for Astro.',
+  // description = "Kết nối cùng Tipskailler. Khám phá góc nhìn lập trình, ghi chép công nghệ, bài luận và các dự án cá nhân được xây dựng trên nền tảng Astro Keel.",
+  description:
+    'Connect with Tipskailler. Explore developer insights, tech notes, essays, and personal projects built with Astro Keel.',
   /** Description of the RSS feed at /rss.xml. */
-  rssDescription: 'Notes, essays, and release logs from Astro Keel.',
+  // rssDescription: 'Ghi chép, bài luận và nhật ký cập nhật của Tipskailler, tối ưu bởi Astro Keel.',
+  rssDescription: 'Notes, essays, and release logs by Tipskailler, powered by Astro Keel.',
   /** Default social share image, relative to the site root (see public/). */
-  ogImage: '/og.jpg',
+  // ogImage: '/og-image-vi.jpg',
+  ogImage: '/og-image-en.jpg',
   /** Post author, emitted in JSON-LD BlogPosting structured data.
    *  Leave empty ('') to omit the author field. */
-  author: 'Astro Keel',
+  author: 'Tipskailler',
   /** Footer credit line. */
-  footerText: 'Built with Astro Keel.',
+  // footerText: 'Phát triển bởi Tipskailler & Astro Keel.',
+  footerText: 'Built by Tipskailler & Astro Keel.',
 } as const;
 
 /** Icons bundled with the theme — see `src/components/SocialLinks.astro`. */
@@ -38,7 +44,12 @@ export interface SocialLink {
 /** Social profiles rendered as inline SVG icons in the footer.
  *  Add or remove entries here — no template edits needed. */
 export const SOCIAL_LINKS: readonly SocialLink[] = [
-  { label: 'GitHub', href: 'https://github.com/kpab/astro-keel', icon: 'github' },
+  {
+    label: 'GitHub',
+    href: 'https://github.com/tipskaillercom-collab/bio-tipskailler-kpab-astro-keel',
+    icon: 'github',
+  },
+  { label: 'Email Contact', href: 'mailto:tipskailler.com@gmail.com', icon: 'email' },
   { label: 'RSS feed', href: '/rss.xml', icon: 'rss' },
 ];
 
@@ -65,7 +76,7 @@ export interface GiscusConfig {
   reactionsEnabled: boolean;
   /** Put the comment box above (`top`) or below (`bottom`) the thread. */
   inputPosition: 'top' | 'bottom';
-  /** Giscus UI language, e.g. `en`, `ja`, `fr`. */
+  /** Giscus UI language, e.g. `en`, `ja`, `vi`, `fr`. */
   lang: string;
   /** Giscus theme used while the site is in light mode. */
   lightTheme: string;
