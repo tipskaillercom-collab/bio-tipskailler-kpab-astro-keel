@@ -10,7 +10,7 @@ export const vi: UIStrings = {
   'nav.home': 'Trang chủ',
   'nav.about': 'Giới thiệu',
   'nav.works': 'Dự án',
-  'nav.blog': 'Bài viết',
+  'nav.blog': 'Nhật ký Blog',
   'nav.search': 'Tìm kiếm',
   'nav.label': 'Điều hướng chính',
   'nav.brandHome': 'Trang chủ {site}',
@@ -27,22 +27,22 @@ export const vi: UIStrings = {
   // Home
   'home.primaryLinks': 'Liên kết chính',
   'home.viewWorks': 'Xem dự án',
-  'home.readNotes': 'Đọc ghi chú',
+  'home.readNotes': 'Đọc ghi chú ...',
   'home.overviewLabel': 'Tổng quan chủ đề',
   'home.latestWorksEyebrow': 'Dự án mới nhất',
-  'home.allWorks': 'Tất cả dự án',
+  'home.allWorks': 'Tất cả dự án ...',
   'home.workTech': 'Công nghệ của {title}',
   'home.worksEmpty':
     'Thêm dự án vào thư mục <code>src/content/works</code> để hiển thị các dự án mới nhất ở đây.',
   'home.latestBlogEyebrow': 'Bài viết mới nhất',
-  'home.allPosts': 'Tất cả bài viết',
+  'home.allPosts': 'Tất cả bài viết ...',
   'home.postsEmpty':
     'Thêm bài viết vào thư mục <code>src/content/blog</code> để hiển thị các ghi chú mới nhất ở đây.',
 
   // Blog index
-  'blog.title': 'Blog',
-  'blog.titlePaged': 'Blog · Trang {page}',
-  'blog.eyebrow': 'Blog',
+  'blog.title': 'Nhật ký Blog',
+  'blog.titlePaged': 'Nhật ký Blog · Trang {page}',
+  'blog.eyebrow': 'Nhật ký Blog',
   'blog.listLabel': 'Danh sách bài viết',
   'blog.tagsEyebrow': 'Thẻ',
   'blog.tagsNavLabel': 'Thẻ bài viết',
@@ -59,7 +59,7 @@ export const vi: UIStrings = {
   'tag.allPosts': 'Tất cả bài viết',
 
   // Blog post
-  'post.eyebrow': 'Blog',
+  'post.eyebrow': 'Nhật ký Blog',
   'post.readingTime': 'Đọc trong {minutes} phút',
   'post.tocLabel': 'Mục lục',
   'post.contentsEyebrow': 'Nội dung',
@@ -68,7 +68,7 @@ export const vi: UIStrings = {
   'post.next': 'Bài sau',
   'post.relatedEyebrow': 'Liên quan',
   'post.breadcrumbHome': 'Trang chủ',
-  'post.breadcrumbBlog': 'Blog',
+  'post.breadcrumbBlog': 'Nhật ký Blog',
 
   // Comments (rendered only when GISCUS.enabled)
   'comments.eyebrow': 'Bình luận',

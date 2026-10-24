@@ -38,15 +38,15 @@ export const en = {
   // Home — labels and links only; the page's own copy lives in index.astro
   'home.primaryLinks': 'Primary links',
   'home.viewWorks': 'View works',
-  'home.readNotes': 'Read notes',
+  'home.readNotes': 'Read notes ...',
   'home.overviewLabel': 'Theme overview',
   'home.latestWorksEyebrow': 'Latest works',
-  'home.allWorks': 'All works',
+  'home.allWorks': 'All works ...',
   'home.workTech': '{title} technology',
   'home.worksEmpty':
     'Add works under <code>src/content/works</code> to surface the latest projects here.',
   'home.latestBlogEyebrow': 'Latest blog',
-  'home.allPosts': 'All posts',
+  'home.allPosts': 'All posts ...',
   'home.postsEmpty':
     'Add blog entries under <code>src/content/blog</code> to surface the latest notes here.',
 
