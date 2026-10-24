@@ -12,6 +12,10 @@ import { vi } from './vi';
 
 export type { UIKey, UIStrings };
 
+/** Danh sách các ngôn ngữ dự án hỗ trợ theo đúng thứ tự mong muốn */
+export const locales = ['en', 'ja', 'vi'] as const;
+export type Locale = (typeof locales)[number]; // "en" | "ja" | "vi"
+
 /** Fallback used when `SITE.locale` has no dictionary. */
 export const DEFAULT_LOCALE = 'en';
 
@@ -22,10 +26,14 @@ export const DICTIONARIES: Record<string, UIStrings> = { en, ja, vi };
  *  `Intl`, `<html lang>`, and the RSS `<language>` element. */
 export const locale: string = SITE.locale;
 
+export const alternateLocales = locales.filter((l) => l !== locale);
+
 // `en-GB` falls back to the `en` dictionary while still formatting dates as
 // `en-GB` — a regional variant rarely needs its own copy of every string.
 const resolveDictionary = (tag: string): UIStrings =>
-  DICTIONARIES[tag] ?? DICTIONARIES[tag.split('-')[0]] ?? DICTIONARIES[DEFAULT_LOCALE];
+  DICTIONARIES[tag as Locale] ??
+  DICTIONARIES[tag.split('-')[0] as Locale] ??
+  DICTIONARIES[DEFAULT_LOCALE];
 
 /** The active dictionary. Exported mainly for tests and debugging — prefer `t()`. */
 export const strings: UIStrings = resolveDictionary(locale);
@@ -34,11 +42,26 @@ export const strings: UIStrings = resolveDictionary(locale);
  * Look up a UI string, filling `{name}` placeholders from `params`.
  * Unknown keys are impossible: `UIKey` is derived from the English dictionary.
  */
-export const t = (key: UIKey, params?: Record<string, string | number>): string => {
-  const value = strings[key];
-  if (!params) return value;
+/**
+ * Hàm t() nhận thêm tham số locale tùy chọn.
+ */
+export const t = (
+  key: UIKey,
+  customLocaleOrParams?: string | Record<string, string | number>,
+  params?: Record<string, string | number>,
+): string => {
+  // Tự động phân tách: nếu tham số thứ 2 là chuỗi (ví dụ 'vi', 'ja'), nó chính là locale
+  const currentLocale = typeof customLocaleOrParams === 'string' ? customLocaleOrParams : locale;
+  const currentParams = typeof customLocaleOrParams === 'object' ? customLocaleOrParams : params;
+
+  const currentStrings = resolveDictionary(currentLocale);
+  const value = currentStrings[key];
+
+  if (!value) return key; // Dự phòng trường hợp key không tồn tại
+  if (!currentParams) return value;
+
   return value.replace(/\{(\w+)\}/g, (match, name: string) =>
-    name in params ? String(params[name]) : match,
+    name in currentParams ? String(currentParams[name]) : match,
   );
 };
 
@@ -53,15 +76,19 @@ export const t = (key: UIKey, params?: Record<string, string | number>): string 
  * through degrades to readable-but-untranslated text until the store is
  * rebuilt, instead of showing either kind of garbage.
  */
-export const readingTime = (minutesRead: unknown): string =>
+export const readingTime = (minutesRead: unknown, customLocale?: string): string =>
   typeof minutesRead === 'number'
-    ? t('post.readingTime', { minutes: minutesRead })
+    ? t('post.readingTime', customLocale, { minutes: minutesRead })
     : String(minutesRead ?? '');
 
 /** Format a publish date in the active locale. `long` spells the month out;
  *  `short` abbreviates it. Both are locale-aware, including field order. */
-export const formatDate = (date: Date, style: 'long' | 'short' = 'long'): string =>
-  new Intl.DateTimeFormat(locale, {
+export const formatDate = (
+  date: Date,
+  style: 'long' | 'short' = 'long',
+  customLocale?: string,
+): string =>
+  new Intl.DateTimeFormat(customLocale ?? locale, {
     month: style,
     day: 'numeric',
     year: 'numeric',
@@ -69,5 +96,22 @@ export const formatDate = (date: Date, style: 'long' | 'short' = 'long'): string
 
 /** Resolve a nav entry's label. `NavItem` requires exactly one of `label` or
  *  `labelKey`, so there is no unlabelled case to fall back from. */
-export const navLabel = (item: NavItem): string =>
-  item.label !== undefined ? item.label : t(item.labelKey);
+export const navLabel = (item: NavItem, customLocale?: string): string =>
+  item.label !== undefined ? item.label : t(item.labelKey, customLocale);
+
+/**
+ * ✨ GIẢI PHÁP RÚT GỌN 1 DÒNG CHO FILE .ASTRO
+ * Tạo ra bộ công cụ dịch thuật và định dạng gắn chặt với locale của trang hiện tại.
+ * Giúp code ở phần HTML siêu sạch mà không bị lỗi Race Condition khi build static.
+ */
+export const useTranslation = (currentLocale?: string) => {
+  const targetLocale = currentLocale ?? locale;
+
+  return {
+    t: (key: UIKey, params?: Record<string, string | number>) => t(key, targetLocale, params),
+    formatDate: (date: Date, style: 'long' | 'short' = 'long') =>
+      formatDate(date, style, targetLocale),
+    readingTime: (minutesRead: unknown) => readingTime(minutesRead, targetLocale),
+    navLabel: (item: NavItem) => navLabel(item, targetLocale),
+  };
+};
