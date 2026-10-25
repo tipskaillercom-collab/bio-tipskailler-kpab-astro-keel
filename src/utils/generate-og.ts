@@ -3,8 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import satori from 'satori';
 import sharp from 'sharp';
-import { locales, locale as defaultLocale, useTranslation } from '../../i18n';
-import { SITE } from '../../consts';
+import { locales, locale as defaultLocale, useTranslation } from '../i18n';
+import { SITE } from '../consts';
 
 // Build-time generated Open Graph images for every blog post and work entry,
 // rendered in the theme's light palette (see global.css tokens). The static

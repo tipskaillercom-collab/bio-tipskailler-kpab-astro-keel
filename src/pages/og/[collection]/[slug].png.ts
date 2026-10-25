@@ -1,5 +1,5 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { getOgStaticPaths, renderOgImage, type OgProps } from '../../utils/generate-og';
+import { getOgStaticPaths, renderOgImage, type OgProps } from '../../../utils/generate-og';
 import { locale as defaultLocale } from '../../../i18n';
 
 export const getStaticPaths = (async () => {
