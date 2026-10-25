@@ -1,0 +1,154 @@
+/* Viết đè các thuộc tính cũ của file gốc */
+
+:root {
+  /* ------------- ROOT ------------------ */
+  /* --- ROOT cho LIGHT --- */
+  /* With @media */
+  /* ... */
+
+  /* WithOut @media */
+  /* - Định nghĩa 'color-accent' */
+  --root-base-light-color-accent-l: 0.54;
+  --root-base-light-color-accent-c: 0.14;
+  --root-base-light-color-accent-h: 35;
+  /* - Định nghĩa 'color-mute' */
+  --root-base-light-color-muted-l: 0.5;
+  --root-base-light-color-muted-c: 0.012;
+  --root-base-light-color-muted-h: 250;
+  /* ---------------------- */
+
+  /* --- ROOT cho DARK --- */
+  /* With @media */
+  /* - Định nghĩa 'color-accent' */
+  --root-base-dark-media-color-accent-l: var(--root-base-dark-color-accent-l);
+  --root-base-dark-media-color-accent-c: var(--root-base-dark-color-accent-c);
+  --root-base-dark-media-color-accent-h: var(--root-base-dark-color-accent-h);
+  /* - Định nghĩa 'color-mute' */
+  --root-base-dark-media-color-muted-l: var(--root-base-dark-color-muted-l);
+  --root-base-dark-media-color-muted-c: var(--root-base-dark-color-muted-c);
+  --root-base-dark-media-color-muted-h: var(--root-base-dark-color-muted-h);
+
+  /* WithOut @media */
+  /* - Định nghĩa 'color-accent' */
+  --root-base-dark-color-accent-l: 0.72;
+  --root-base-dark-color-accent-c: 0.13;
+  --root-base-dark-color-accent-h: 42;
+  /* - Định nghĩa 'color-mute' */
+  --root-base-dark-color-muted-l: 0.69;
+  --root-base-dark-color-muted-c: 0.012;
+  --root-base-dark-color-muted-h: 250;
+  /* ------------------------------------- */
+
+  /* ------------- BASE ------------------ */
+  /* --- Base cho LIGHT --- */
+  /* With @media */
+  /* ... */
+
+  /* WithOut @media */
+  /* - Định nghĩa 'color-accent' */
+  --base-light-color-accent-l: var(--root-base-light-color-accent-l);
+  --base-light-color-accent-c: var(--root-base-light-color-accent-c);
+  --base-light-color-accent-h: var(--root-base-light-color-accent-h);
+  /* - Định nghĩa 'color-mute' */
+  --base-light-color-muted-l: var(--root-base-light-color-muted-l);
+  --base-light-color-muted-c: var(--root-base-light-color-muted-c);
+  --base-light-color-muted-h: var(--root-base-light-color-muted-h);
+  /* ---------------------- */
+
+  /* --- Base cho DARK --- */
+  /* With @media */
+  --base-dark-media-color-accent-l: var(--root-base-dark-media-color-accent-l);
+  --base-dark-media-color-accent-c: var(--root-base-dark-media-color-accent-c);
+  --base-dark-media-color-accent-h: var(--root-base-dark-media-color-accent-h);
+  /* - Định nghĩa 'color-mute' */
+  --base-dark-media-color-muted-l: var(--root-base-dark-media-color-muted-l);
+  --base-dark-media-color-muted-c: var(--root-base-dark-media-color-muted-c);
+  --base-dark-media-color-muted-h: var(--root-base-dark-media-color-muted-h);
+
+  /* WithOut @media */
+  /* - Định nghĩa 'color-accent' */
+  --base-dark-color-accent-l: var(--root-base-dark-color-accent-l);
+  --base-dark-color-accent-c: var(--root-base-dark-color-accent-c);
+  --base-dark-color-accent-h: var(--root-base-dark-color-accent-h);
+  /* - Định nghĩa 'color-mute' */
+  --base-dark-color-muted-l: var(--root-base-dark-color-muted-l);
+  --base-dark-color-muted-c: var(--root-base-dark-color-muted-c);
+  --base-dark-color-muted-h: var(--root-base-dark-color-muted-h);
+  /* ------------------------------------- */
+}
+/* ------------------------------- */
+
+/* --- Định nghĩa cho LIGHT --- */
+/* - With @media */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+  }
+}
+
+/* - WithOut @media */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* - Định nghĩa 'color-accent' */
+  --color-accent: oklch(
+    var(--base-light-color-accent-l) var(--base-light-color-accent-c)
+      var(--base-light-color-accent-h)
+  );
+
+  /* - Định nghĩa 'color-multed' */
+  --color-multed: oklch(
+    var(--base-light-color-multed-l) var(--base-light-color-multed-c)
+      var(--base-light-color-multed-h)
+  );
+}
+/* ------------------------------- */
+
+/* --- Định nghĩa cho DARK --- */
+/* - With @media */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    /* - Định nghĩa 'color-accent' */
+    --color-accent: oklch(
+      var(--base-dark-media-color-accent-l) var(--base-dark-media-color-accent-c)
+        var(--base-dark-media-color-accent-h)
+    );
+
+    /* - Định nghĩa 'color-muted' */
+    --color-muted: oklch(
+      var(--base-dark-media-color-muted-l) var(--base-dark-media-color-muted-c)
+        var(--base-dark-media-color-muted-h)
+    );
+  }
+}
+
+/* - WithOut @media */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* - Định nghĩa 'color-accent' */
+  --color-accent: oklch(
+    var(--base-dark-color-accent-l) var(--base-dark-color-accent-c) var(--base-dark-color-accent-h)
+  );
+
+  /* - Định nghĩa 'color-multed' */
+  --color-multed: oklch(
+    var(--base-dark-color-multed-l) var(--base-dark-color-multed-c) var(--base-dark-color-multed-h)
+  );
+}
+/* ------------------------------- */
+
+/**
+ * Shiki dual themes: github-light under data-theme, github-dark under data-theme
+ * ==============================================================================
+ */
+
+.eyebrow {
+  color: var(--color-muted);
+}
+
+.eyebrow::before {
+  background: var(--color-accent);
+}
