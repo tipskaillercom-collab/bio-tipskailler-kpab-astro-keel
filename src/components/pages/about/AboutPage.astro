@@ -6,6 +6,7 @@
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import { SITE } from '../../../consts';
 import { useTranslation, locale as defaultLocale } from '../../../i18n';
+import { useWithBaseWithLocale } from '../../../lib/url';
 
 interface Props {
   locale: string;
@@ -15,6 +16,7 @@ const { locale: propLocale } = Astro.props;
 
 const currentLocale = propLocale ?? Astro.params.locale ?? defaultLocale;
 const { t } = useTranslation(currentLocale);
+const { withBase } = useWithBaseWithLocale(currentLocale);
 ---
 
 <BaseLayout

@@ -4,9 +4,9 @@ import type { CollectionEntry } from 'astro:content';
 import type { Page } from 'astro';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import Pagination from '../../../components/Pagination.astro';
-import { withBase } from '../../../lib/url';
 import { SITE } from '../../../consts';
 import { useTranslation, locale as defaultLocale } from '../../../i18n';
+import { useWithBaseWithLocale } from '../../../lib/url';
 
 interface Props {
   page: Page<CollectionEntry<'blog'>>;
@@ -20,6 +20,7 @@ const taggedPosts = page.data;
 
 const currentLocale = propLocale ?? Astro.params.locale ?? defaultLocale;
 const { t, formatDate, readingTime } = useTranslation(currentLocale);
+const { withBase } = useWithBaseWithLocale(currentLocale);
 
 const readingTimes = new Map(
   await Promise.all(

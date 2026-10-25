@@ -5,9 +5,9 @@ import { Image } from 'astro:assets';
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import StructuredData from '../../../components/StructuredData.astro';
 import Comments from '../../../components/Comments.astro';
-import { withBase } from '../../../lib/url';
 import { SITE } from '../../../consts';
 import { useTranslation, locale as defaultLocale } from '../../../i18n';
+import { useWithBaseWithLocale } from '../../../lib/url';
 
 interface Props {
   entry: CollectionEntry<'blog'>;
@@ -21,6 +21,7 @@ const { entry, newer, older, related, locale: propLocale } = Astro.props;
 
 const currentLocale = propLocale ?? Astro.params.locale ?? defaultLocale;
 const { t, formatDate, readingTime } = useTranslation(currentLocale);
+const { withBase } = useWithBaseWithLocale(currentLocale);
 
 const { Content, headings, remarkPluginFrontmatter } = await render(entry);
 
