@@ -31,7 +31,15 @@ const works = (await getCollection('works')).sort((a, b) => {
       {
         works.map((work) => (
           <article class="work-card">
-            <p class="entry-meta">{work.data.tech.join(' / ')}</p>
+            <p class="entry-meta">
+              {work.data.tech.map((tech, index) => (
+                <>
+                  {index > 0 && <span>/</span>}
+                  <a href={withBase(`/tech/${tech.toLowerCase()}/`)}>{tech}</a>
+                </>
+              ))}
+            </p>
+            {/* <p class="entry-meta">{work.data.tech.join(' / ')}</p> */}
             <h2>
               <a href={withBase(`/works/${work.id}/`)}>{work.data.title}</a>
             </h2>
