@@ -1,0 +1,86 @@
+---
+import { render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import type { Page } from 'astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Pagination from '../../../components/Pagination.astro';
+import { SITE } from '../../../consts';
+import { useTranslation, locale as defaultLocale } from '../../../i18n';
+import { useWithBaseWithLocale } from '../../../lib/url';
+
+interface Props {
+  page: Page<CollectionEntry<'blog'>>;
+  otherTags: string[];
+  locale: string;
+}
+
+const { page, otherTags, locale: propLocale } = Astro.props;
+const { tag } = Astro.params;
+const taggedPosts = page.data;
+
+const currentLocale = propLocale ?? Astro.params.locale ?? defaultLocale;
+const { t, formatDate, readingTime } = useTranslation(currentLocale);
+const { withBase } = useWithBaseWithLocale(currentLocale);
+
+const readingTimes = new Map(
+  await Promise.all(
+    taggedPosts.map(async (post) => {
+      const { remarkPluginFrontmatter } = await render(post);
+      return [post.id, readingTime(remarkPluginFrontmatter.minutesRead)] as const;
+    }),
+  ),
+);
+
+const pageTitle =
+  page.currentPage === 1
+    ? t('tag.title', { tag: tag! })
+    : t('tag.titlePaged', { tag: tag!, page: page.currentPage });
+---
+
+<BaseLayout title={pageTitle} description={t('tag.description', { tag: tag!, site: SITE.title })}>
+  <section class="page-head section">
+    <p class="eyebrow">{t('tag.eyebrow')}</p>
+    <h1>{tag}</h1>
+    <p class="lead">{t('tag.lead', { tag: tag! })}</p>
+  </section>
+
+  <section class="section content-index" aria-label={t('tag.listLabel', { tag: tag! })}>
+    <div class="index-sidebar">
+      <p class="eyebrow">{t('tag.moreTagsEyebrow')}</p>
+      <nav class="tag-cloud" aria-label={t('tag.otherTagsNavLabel')}>
+        <a href={withBase('/blog/')}>{t('tag.allPosts')}</a>
+        {otherTags.map((item) => <a href={withBase(`/blog/tags/${item}/`)}>{item}</a>)}
+      </nav>
+    </div>
+
+    <div>
+      <div class="entry-list">
+        {
+          taggedPosts.map((post) => (
+            <article class="entry-card">
+              <div class="entry-meta">
+                <time datetime={post.data.publishDate.toISOString()}>
+                  {formatDate(post.data.publishDate, 'short')}
+                </time>
+                <span>{readingTimes.get(post.id)}</span>
+                <div>
+                  {post.data.tags.map((tag, index) => (
+                    <>
+                      {index > 0 && <span>/</span>}
+                      <a href={withBase(`/blog/tags/${tag.toLowerCase()}/`)}>{tag}</a>
+                    </>
+                  ))}
+                </div>
+              </div>
+              <h2>
+                <a href={withBase(`/blog/${post.id}/`)}>{post.data.title}</a>
+              </h2>
+              <p>{post.data.description}</p>
+            </article>
+          ))
+        }
+      </div>
+      <Pagination page={page} />
+    </div>
+  </section>
+</BaseLayout>

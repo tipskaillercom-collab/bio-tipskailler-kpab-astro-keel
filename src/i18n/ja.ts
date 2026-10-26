@@ -27,15 +27,15 @@ export const ja: UIStrings = {
   // Home
   'home.primaryLinks': '主要リンク',
   'home.viewWorks': '制作物を見る',
-  'home.readNotes': 'ノートを読む',
+  'home.readNotes': 'ノートを読む ...',
   'home.overviewLabel': 'テーマの概要',
   'home.latestWorksEyebrow': '最新の制作物',
-  'home.allWorks': 'すべての制作物',
+  'home.allWorks': 'すべての制作物 ...',
   'home.workTech': '{title} の使用技術',
   'home.worksEmpty':
     '<code>src/content/works</code> に制作物を追加すると、ここに最新のプロジェクトが並びます。',
   'home.latestBlogEyebrow': '最新のブログ',
-  'home.allPosts': 'すべての記事',
+  'home.allPosts': 'すべての記事 ...',
   'home.postsEmpty':
     '<code>src/content/blog</code> に記事を追加すると、ここに最新のノートが並びます。',
 

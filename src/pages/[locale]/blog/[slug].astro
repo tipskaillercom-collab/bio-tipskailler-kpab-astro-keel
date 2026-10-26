@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import BlogDetailPage from '../../../components/pages/blog/BlogDetailPage.astro';
+import { alternateLocales } from '../../../i18n';
+
+export async function getStaticPaths() {
+  // Newest-first, same ordering as the blog index.
+  const entries = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+  );
+
+  return alternateLocales.flatMap((locale) => {
+    return entries.map((entry, index) => {
+      // Up to 3 posts ranked by shared tags; ties resolved by newest publish date.
+      const related = entries
+        .filter((other) => other.id !== entry.id)
+        .map((other) => ({
+          post: other,
+          shared: other.data.tags.filter((tag) => entry.data.tags.includes(tag)).length,
+        }))
+        .filter(({ shared }) => shared > 0)
+        .sort(
+          (a, b) =>
+            b.shared - a.shared ||
+            b.post.data.publishDate.valueOf() - a.post.data.publishDate.valueOf(),
+        )
+        .slice(0, 3)
+        .map(({ post }) => post);
+
+      return {
+        params: { locale, slug: entry.id },
+        props: {
+          entry,
+          newer: entries[index - 1] ?? null,
+          older: entries[index + 1] ?? null,
+          related,
+          locale,
+        },
+      };
+    });
+  });
+}
+
+const { entry, newer, older, related, locale } = Astro.props;
+---
+
+<BlogDetailPage entry={entry} newer={newer} older={older} related={related} locale={locale} />

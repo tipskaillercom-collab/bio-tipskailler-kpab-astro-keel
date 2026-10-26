@@ -11,7 +11,7 @@ export const SITE = {
   locale: 'en',
   /** Site name — used in the header brand, <title>, and og:site_name. */
   // title = "Tipskailler - Dự Án Kỹ Thuật & Dấu Ấn Cá Nhân",
-  title: 'Tipskailler - Personal Bio & Tech Showcase',
+  title: 'キールポートフォリオシステム Thằng khùng  Tipskailler - Personal Bio & Tech Showcase',
   /** Default meta description for pages that don't set their own. */
   // description = "Kết nối cùng Tipskailler. Khám phá góc nhìn lập trình, ghi chép công nghệ, bài luận và các dự án cá nhân được xây dựng trên nền tảng Astro Keel.",
   description:

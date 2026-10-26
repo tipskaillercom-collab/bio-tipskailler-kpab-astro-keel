@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import type { GetStaticPaths, InferGetStaticPropsType } from 'astro';
+import BlogTagListPage from '../../../../../components/pages/blog/BlogTagListPage.astro';
+import { alternateLocales } from '../../../../../i18n';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const allTags = [...new Set(posts.flatMap((post) => post.data.tags))];
+
+  return allTags.flatMap((tag) => {
+    const taggedPosts = posts
+      .filter((post) => post.data.tags.includes(tag))
+      .sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+    const otherTags = allTags.filter((item) => item !== tag).sort((a, b) => a.localeCompare(b));
+
+    return alternateLocales.flatMap((locale) => {
+      return paginate(taggedPosts, {
+        pageSize: 10,
+        params: { locale, tag },
+        props: { otherTags, locale },
+      });
+    });
+  });
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { page, otherTags, locale } = Astro.props;
+---
+
+<BlogTagListPage page={page} otherTags={otherTags} locale={locale} />

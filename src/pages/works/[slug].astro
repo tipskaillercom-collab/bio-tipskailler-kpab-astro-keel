@@ -29,7 +29,17 @@ const { Content } = await render(entry);
         <time datetime={entry.data.publishDate.toISOString()}
           >{formatDate(entry.data.publishDate)}</time
         >
-        <span>{entry.data.tech.join(' / ')}</span>
+        <div>
+          {
+            entry.data.tech.map((tech, index) => (
+              <>
+                {index > 0 && <span>/</span>}
+                <a href={withBase(`/tech/${tech.toLowerCase()}/`)}>{tech}</a>
+              </>
+            ))
+          }
+        </div>
+        <!-- <span>{entry.data.tech.join(' / ')}</span> -->
       </div>
       <div class="action-row">
         {
@@ -65,7 +75,13 @@ const { Content } = await render(entry);
       <aside class="article-toc">
         <p class="eyebrow">{t('work.stackEyebrow')}</p>
         <ul class="tech-list">
-          {entry.data.tech.map((item) => <li>{item}</li>)}
+          {
+            entry.data.tech.map((item) => (
+              <li>
+                <a href={withBase(`/tech/${item.toLowerCase()}/`)}>{item}</a>
+              </li>
+            ))
+          }
         </ul>
       </aside>
       <div class="prose">

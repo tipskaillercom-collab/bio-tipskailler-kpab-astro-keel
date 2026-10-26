@@ -1,0 +1,247 @@
+/* Ám chỉ file này chứa các thuộc tính viết thêm cho file gốc */
+
+:root {
+  /* ------------- ROOT ------------------ */
+  --root-base-extend-line-width-heading: 1rem;
+  --root-base-extend-line-padding-heading: 1.2rem;
+
+  /* --- ROOT cho LIGHT --- */
+  /* With @media */
+  /* ... */
+
+  /* WithOut @media */
+  /* - Định nghĩa 'line-width-heading */
+  --root-base-extend-light-line-width-heading: round(
+    up,
+    calc(var(--root-base-extend-line-width-heading) / 4),
+    1px
+  );
+  /* - Định nghĩa 'line-padding-heading */
+  --root-base-extend-light-line-padding-heading: var(--root-base-extend-line-padding-heading);
+  /* ---------------------- */
+
+  /* --- ROOT cho DARK --- */
+  /* With @media */
+  /* - Định nghĩa 'line-width-heading */
+  --root-base-extend-dark-media-line-width-heading: var(--root-base-extend-dark-line-width-heading);
+  /* - Định nghĩa 'line-padding-heading */
+  --root-base-extend-dark-media-line-padding-heading: var(
+    --root-base-extend-dark-line-padding-heading
+  );
+
+  /* WithOut @media */
+  /* - Định nghĩa 'line-width-heading */
+  --root-base-extend-dark-line-width-heading: round(
+    calc(var(--root-base-extend-line-width-heading) / 7),
+    1px
+  );
+  /* - Định nghĩa 'line-padding-heading */
+  --root-base-extend-dark-line-padding-heading: var(--root-base-extend-line-padding-heading);
+  /* ------------------------------------- */
+
+  /* ------------- BASE ------------------ */
+  /* --- Base cho LIGHT --- */
+  /* With @media */
+  /* ... */
+
+  /* WithOut @media */
+  /* - Định nghĩa 'line-width-heading */
+  --base-extend-light-line-width-heading: var(--root-base-extend-light-line-width-heading);
+  /* - Định nghĩa 'line-padding-heading */
+  --base-extend-light-line-padding-heading: var(--root-base-extend-light-line-padding-heading);
+  /* ---------------------- */
+
+  /* --- Base cho DARK --- */
+  /* With @media */
+  /* - Định nghĩa 'line-width-heading */
+  --base-extend-dark-media-line-width-heading: var(--base-extend-dark-line-width-heading);
+  /* - Định nghĩa 'line-padding-heading */
+  --base-extend-dark-media-line-padding-heading: var(--base-extend-dark-line-padding-heading);
+
+  /* WithOut @media */
+  /* - Định nghĩa 'line-width-heading */
+  --base-extend-dark-line-width-heading: var(--root-base-extend-dark-line-width-heading);
+  /* - Định nghĩa 'line-padding-heading */
+  --base-extend-dark-line-padding-heading: var(--root-base-extend-dark-line-padding-heading);
+  /* ------------------------------------- */
+}
+
+/* --- Định nghĩa cho LIGHT --- */
+/* - With @media */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+  }
+}
+
+/* - WithOut @media */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* - Định nghĩa 'extend-line-width-heading */
+  --extend-line-width-heading: var(--base-extend-light-line-width-heading);
+  /* - Định nghĩa 'extend-line-padding-heading */
+  --extend-line-padding-heading: var(--base-extend-light-line-padding-heading);
+}
+/* ------------------------------- */
+
+/* --- Định nghĩa cho DARK --- */
+/* - With @media */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    /* - Định nghĩa 'extend-line-width-heading */
+    --extend-line-width-heading: var(--base-extend-dark-media-line-width-heading);
+    /* - Định nghĩa 'extend-line-padding-heading */
+    --extend-line-padding-heading: var(--base-extend-dark-media-line-padding-heading);
+  }
+}
+
+/* - WithOut @media */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  /* - Định nghĩa 'extend-line-width-heading */
+  --extend-line-width-heading: var(--base-extend-dark-line-width-heading);
+  /* - Định nghĩa 'extend-line-padding-heading */
+  --extend-line-padding-heading: var(--base-extend-dark-line-padding-heading);
+}
+/* ------------------------------- */
+
+/**
+ * Shiki dual themes: github-light under data-theme, github-dark under data-theme
+ * ==============================================================================
+ */
+
+/* --- 0. Slogan Brand --- */
+a.brand > span.brand-mark:first-child + span:last-child {
+  color: var(--color-accent);
+}
+
+/* --- 1. Nhóm H1 (Hero & Page Head) --- */
+section.section:where(.page-head, .hero) > p.eyebrow + h1,
+header.page-head.section.article-head > p.eyebrow + h1 {
+  position: relative;
+  display: block;
+  padding-left: var(--extend-line-padding-heading);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: var(--extend-line-width-heading);
+    top: clamp(1.5rem, 3vw, 2.5rem);
+    height: 50%;
+    background: var(--color-muted);
+  }
+}
+
+/* --- 2. Nhóm H2 (Work & Entry List) --- */
+/* 2.1 WithOut Link */
+section.section:where(.page-head, .hero)
+  ~ section.section:where(.split-overview, .index-feed, .prose-grid, .prose-grid.about-closing)
+  > div
+  > p.eyebrow
+  + h2 {
+  position: relative;
+  display: block;
+  padding-left: var(--extend-line-padding-heading);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: var(--extend-line-width-heading);
+    top: clamp(1.5rem, 3vw, 2.5rem);
+    top: 0;
+    height: 50%;
+    background: var(--color-muted);
+  }
+}
+
+/* 2.2 With Link */
+section.page-head.section
+  + section.section
+  div:where(.work-list, .entry-list)
+  > article:where(.work-card)
+  > :where(p.entry-meta, div.entry-meta)
+  + h2:has(a) {
+  position: relative;
+  display: block;
+  padding-left: var(--extend-line-padding-heading);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: var(--extend-line-width-heading);
+    top: 0;
+    height: 100%;
+    background: var(--color-accent);
+  }
+}
+
+/* --- 3. Nhóm danh sách liệt kê những 'item-*' trong mô tả 'Entry-Meta' --- */
+/* 3.1 'item-tag' trong mô tả 'Entry-Meta' của Blog */
+.article-head .entry-meta div,
+.entry-card > .entry-meta div {
+  display: flex;
+}
+
+.article-head .entry-meta div,
+.work-card > .entry-meta,
+.entry-card > .entry-meta div {
+  gap: 0 0.3rem;
+}
+
+.article-head .entry-meta div::before,
+.work-card > .entry-meta::before,
+.entry-card > .entry-meta div::before,
+.article-head .entry-meta div::after,
+.work-card > .entry-meta::after,
+.entry-card > .entry-meta div::after {
+  color: var(--color-accent);
+}
+
+.article-head .entry-meta div::before,
+.work-card > .entry-meta::before,
+.entry-card > .entry-meta div::before {
+  content: '[';
+}
+
+.article-head .entry-meta div::after,
+.work-card > .entry-meta::after,
+.entry-card > .entry-meta div::after {
+  content: ']';
+}
+
+/* 3.2 'item-tech' trong mô tả 'Entry-Meta' của Work */
+section.page-head.section
+  + section.section
+  div:where(.work-list, .entry-list)
+  > article:where(.work-card, .entry-card)
+  > :where(p.entry-meta, div.entry-meta)::before,
+section.page-head.section
+  + section.section
+  div:where(.work-list, .entry-list)
+  > article:where(.work-card)
+  > :where(p.entry-meta, div.entry-meta)::after {
+  color: var(--color-accent);
+}
+
+section.page-head.section
+  + section.section
+  div:where(.work-list, .entry-list)
+  > article:where(.work-card)
+  > :where(p.entry-meta, div.entry-meta)::before {
+  content: '[';
+}
+
+section.page-head.section
+  + section.section
+  div:where(.work-list, .entry-list)
+  > article:where(.work-card)
+  > :where(p.entry-meta, div.entry-meta)::after {
+  content: ']';
+}

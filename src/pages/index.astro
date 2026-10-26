@@ -94,8 +94,10 @@ const websiteSchema = {
                 <p>{work.data.description}</p>
                 {work.data.tech.length > 0 && (
                   <ul class="tag-list" aria-label={t('home.workTech', { title: work.data.title })}>
-                    {work.data.tech.slice(0, 4).map((tech) => (
-                      <li>{tech}</li>
+                    {work.data.tech.map((tech) => (
+                      <li>
+                        <a href={withBase(`/tech/${tech.toLowerCase()}/`)}>{tech}</a>
+                      </li>
                     ))}
                   </ul>
                 )}
