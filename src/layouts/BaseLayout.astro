@@ -126,27 +126,59 @@ const isActive = (href: string) => {
 
           const segments = window.location.pathname.split('/').filter(Boolean);
 
-          if (segments.length > 0 && locales.includes(segments[0])) {
-            segments.shift();
+          // Phát hiện xem URL hiện tại đang ở ngôn ngữ nào (Dựa vào segment đầu tiên có length === 2)
+          const currentUrlLocale =
+            segments.length > 0 && locales.includes(segments[0]) ? segments[0] : defaultLocale;
+
+          // Nếu ngôn ngữ người dùng lưu trong localStorage ĐÃ TRÙNG với ngôn ngữ trên URL hiện tại -> DỪNG NGAY, không làm gì cả!
+          if (storedLocale === currentUrlLocale) {
+            return;
+          }
+
+          // --- Nếu chưa trùng, ta tiến hành chuyển hướng sang đúng đường dẫn của storedLocale ---
+
+          let cleanSegments = [...segments];
+          // Nếu URL cũ đang có sẵn tiền tố ngôn ngữ cũ, ta gỡ nó ra trước
+          if (cleanSegments.length > 0 && locales.includes(cleanSegments[0])) {
+            cleanSegments.shift();
           }
 
           let newPath = '';
           if (storedLocale === defaultLocale) {
-            newPath = '/' + segments.join('/');
+            // Bản default (ví dụ: 'en') thì không có tiền tố ở URL gốc
+            newPath = '/' + cleanSegments.join('/');
           } else {
-            newPath = `/${storedLocale}/` + segments.join('/');
+            // Các bản khác thì thêm /vi/ hoặc /ja/ lên đầu
+            newPath = `/${storedLocale}/` + cleanSegments.join('/');
           }
 
           const finalUrl =
             newPath.replace(/\/+/g, '/') + window.location.search + window.location.hash;
 
-          const currentFullUrl =
-            window.location.pathname + window.location.search + window.location.hash;
+          // Thực hiện chuyển hướng thẳng đến URL mới
+          window.location.href = finalUrl;
 
-          // Chỉ chuyển hướng nếu URL mới thực sự khác URL hiện tại (Chống lặp vô hạn)
-          if (finalUrl !== currentFullUrl) {
-            window.location.href = finalUrl;
-          }
+          // if (segments.length > 0 && locales.includes(segments[0])) {
+          //   segments.shift();
+          // }
+
+          // let newPath = '';
+          // if (storedLocale === defaultLocale) {
+          //   newPath = '/' + segments.join('/');
+          // } else {
+          //   newPath = `/${storedLocale}/` + segments.join('/');
+          // }
+
+          // const finalUrl =
+          //   newPath.replace(/\/+/g, '/') + window.location.search + window.location.hash;
+
+          // const currentFullUrl =
+          //   window.location.pathname + window.location.search + window.location.hash;
+
+          // // Chỉ chuyển hướng nếu URL mới thực sự khác URL hiện tại (Chống lặp vô hạn)
+          // if (finalUrl !== currentFullUrl) {
+          //   window.location.href = finalUrl;
+          // }
         };
 
         applyLocale();
@@ -222,7 +254,7 @@ const isActive = (href: string) => {
         const nextIndexLocale = (currentIndexLocale + 1) % locales.length;
         const nextLocale = locales[nextIndexLocale];
 
-        // localStorage.setItem('locale', nextLocale);
+        localStorage.setItem('locale', nextLocale);
         window.globalApplyLocale();
       });
     </script>
