@@ -222,7 +222,7 @@ const isActive = (href: string) => {
         const nextIndexLocale = (currentIndexLocale + 1) % locales.length;
         const nextLocale = locales[nextIndexLocale];
 
-        localStorage.setItem('locale', nextLocale);
+        // localStorage.setItem('locale', nextLocale);
         window.globalApplyLocale();
       });
     </script>

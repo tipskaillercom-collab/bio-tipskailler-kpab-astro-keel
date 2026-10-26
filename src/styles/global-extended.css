@@ -164,7 +164,7 @@ section.section:where(.page-head, .hero)
 section.page-head.section
   + section.section
   div:where(.work-list, .entry-list)
-  > article:where(.work-card)
+  > article:where(.work-card, .entry-card)
   > :where(p.entry-meta, div.entry-meta)
   + h2:has(a) {
   position: relative;
