@@ -23,8 +23,7 @@ export const DICTIONARIES: Record<string, UIStrings> = { en, ja, vi }; // Regist
 
 /** The active locale, straight from `SITE.locale`. Also the value passed to
  *  `Intl`, `<html lang>`, and the RSS `<language>` element. */
-// Thay đổi từ const sang let để có thể gán lại bằng hàm setCurrentLocale
-export let locale: Locale = SITE.locale;
+export const locale: Locale = SITE.locale;
 
 // `en-GB` falls back to the `en` dictionary while still formatting dates as
 // `en-GB` — a regional variant rarely needs its own copy of every string.
