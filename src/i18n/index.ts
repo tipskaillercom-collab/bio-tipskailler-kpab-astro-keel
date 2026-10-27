@@ -11,15 +11,20 @@ import { vi } from './vi'; // Added a locale: `vi.ts`
 
 export type { UIKey, UIStrings };
 
+/** Danh sách ngôn ngữ hỗ trợ (theo đúng thứ) */
+export const locales = ['en', 'ja', 'vi'] as const;
+export type Locale = (typeof locales)[number];
+
 /** Fallback used when `SITE.locale` has no dictionary. */
-export const DEFAULT_LOCALE = 'en';
+export const DEFAULT_LOCALE: Locale = 'en';
 
 /** Registered dictionaries, keyed by BCP 47 language tag. */
 export const DICTIONARIES: Record<string, UIStrings> = { en, ja, vi }; // Registered locale: `vi.ts`
 
 /** The active locale, straight from `SITE.locale`. Also the value passed to
  *  `Intl`, `<html lang>`, and the RSS `<language>` element. */
-export let locale: string = SITE.locale; // Changed typeof locale from: `const` to `let`, for set current locale
+// Thay đổi từ const sang let để có thể gán lại bằng hàm setCurrentLocale
+export let locale: Locale = SITE.locale;
 
 // `en-GB` falls back to the `en` dictionary while still formatting dates as
 // `en-GB` — a regional variant rarely needs its own copy of every string.
@@ -27,7 +32,7 @@ export let locale: string = SITE.locale; // Changed typeof locale from: `const` 
 const resolveDictionary = (tag: string): UIStrings =>
   DICTIONARIES[tag as Locale] ??
   DICTIONARIES[tag.split('-')[0] as Locale] ??
-  DICTIONARIES[DEFAULT_LOCALE as Locale];
+  DICTIONARIES[DEFAULT_LOCALE];
 
 /** The active dictionary. Exported mainly for tests and debugging — prefer `t()`. */
 export const strings: UIStrings = resolveDictionary(locale);
@@ -77,10 +82,6 @@ export const navLabel = (item: NavItem): string =>
 // ===============================================================
 // ================= Tipskailler Extend Codes ====================
 // ===============================================================
-
-/** Danh sách ngôn ngữ hỗ trợ (theo đúng thứ) */
-export const locales = ['en', 'ja', 'vi'] as const;
-type Locale = (typeof locales)[number];
 
 /** Danh sách ngôn ngữ bổ sung (loại bỏ ngôn ngữ hiện tại của hệ thống) */
 export const alternateLocales = locales.filter((l) => l !== locale);
