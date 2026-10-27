@@ -27,4 +27,12 @@ pnpm-debug.log*
 # editor / agent local state
 .codex/
 .claude/
+
+# tipskailler folders ignore
 .aider*
+.devcontainer
+.github/
+.my-resources/
+.vscode/
+
+

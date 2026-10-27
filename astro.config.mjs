@@ -20,7 +20,9 @@ const {
 const isProd = PUBLIC_APP_ENV === 'production';
 
 // Đọc và parse file cấu hình headers tự động
-const headersFilePath = path.resolve('./security-headers.json');
+const headersFilePath = path.resolve(
+  '.dev-resources/security/security-header/web-servers/docker/security-headers.json',
+);
 let securityHeaders = {}; // Hoặc bạn có thể dùng: /** @type {import('node:http').OutgoingHttpHeaders} */ ({});
 
 try {

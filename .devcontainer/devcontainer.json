@@ -9,7 +9,10 @@
         "esbenp.prettier-vscode",
         "editorconfig.editorconfig",
         "bradlc.vscode-tailwindcss",
-        "naumovs.color-highlight"
+        "naumovs.color-highlight",
+        "daanrosendal.pinboard",
+        "ryu1kn.partial-diff",
+        "funkyremi.vscode-google-translate"
       ]
     }
   },
