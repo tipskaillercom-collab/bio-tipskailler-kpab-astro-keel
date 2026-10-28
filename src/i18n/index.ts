@@ -13,7 +13,7 @@ export type { UIKey, UIStrings };
 
 /** Danh sách ngôn ngữ hỗ trợ (theo đúng thứ) */
 export const locales = ['en', 'ja', 'vi'] as const;
-type Locale = (typeof locales)[number];
+export type Locale = (typeof locales)[number];
 
 /** Fallback used when `SITE.locale` has no dictionary. */
 export const DEFAULT_LOCALE: Locale = 'en';
