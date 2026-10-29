@@ -17,13 +17,11 @@ import CodeCopy from '../components/CodeCopy.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import { createI18nHelper } from '../lib/client-locale';
 
-// Khởi tạo helper `serverI18nHelper` ở Server-side để lấy cấu trúc logic
+// Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
 const serverI18nHelper = createI18nHelper();
-// Định nghĩa namespace client cho helper `serverI18nHelper`
 const NS_ClientI18nHelper = '__clientI18nHelpers';
 
-// Chuyển đổi các hàm thành chuỗi code mã nguồn.
-// Trình biên dịch của Astro/Vite sẽ tự convert code TS trong file helper thành JS thuần ở đây.
+// Ép toàn bộ logic các hàm thành chuỗi văn bản (String) để gán vào đối tượng toàn cục `window` trên trình duyệt
 const clientI18nHelpers = `
   window.${NS_ClientI18nHelper} = window.${NS_ClientI18nHelper} || {};
 
@@ -111,43 +109,60 @@ const isActive = (href: string) => {
       })();
     </script>
 
-    <!-- Inject code helper xuống client an toàn -->
-    <!-- Sử dụng directive set:html để Astro inject thẳng chuỗi code vào mà không bị escape các ký tự đặc biệt -->
+    <!-- Đưa bộ thư viện helper dạng chuỗi vào môi trường runtime của trình duyệt -->
     <script is:inline set:html={clientI18nHelpers} />
+    <!-- Script chặn render sai ngôn ngữ ngay trước khi trình duyệt vẽ giao diện (Anti-Flicker) -->
     <script
       is:inline
       define:vars={{
         NS_ClientI18nHelper: NS_ClientI18nHelper,
         locales: locales,
-        defaultLocale: locale,
+        defaultLocale: defaultLocale, // Được truyền trực tiếp từ biến `locale` (SITE.locale) của file i18n/index.ts. `NOTE`: Nó khác với `locale` hiện tại của trang
       }}
     >
       (() => {
-        // Logic điều hướng & đồng bộ chính
         const applyLocale = () => {
-          // Định nghĩa biến trung gian viết tắt trỏ thẳng vào object global
-          // Đảm bảo lấy đúng các hàm từ namespace toàn cục đã inject
+          // Lấy bộ công cụ helper từ đối tượng window toàn cục
           const clientI18nHelpers = window[NS_ClientI18nHelper];
           if (!clientI18nHelpers) return;
 
+          // Thực hiện phân rã các thông số URL hiện tại
           const segments = clientI18nHelpers.getSegments();
           const storedLocale = localStorage.getItem('locale');
+
+          // Kiểm tra xem phân đoạn đầu tiên của URL có phải là mã ngôn ngữ hợp lệ hay không
           const isValidLocaleResult = clientI18nHelpers.isValidLocale(segments[0], locales);
+
+          // Lấy ra ngôn ngữ thực tế của URL (nếu URL không có tiền tố, hàm trả về defaultLocale)
           const currentUrlLocale = clientI18nHelpers.getCurrentLocale(
             segments,
             isValidLocaleResult,
             defaultLocale,
           );
 
-          // Nếu URL đã có sẵn tiền tố ngôn ngữ hợp lệ, đồng bộ lại localStorage và dừng lại
-          if (isValidLocaleResult) {
-            if (storedLocale !== segments[0]) {
-              localStorage.setItem('locale', segments[0]);
-            }
+          // TRƯỜNG HỢP ĐẶC BIỆT (Yêu cầu cốt lõi): URL chứa mã ngôn ngữ trùng với ngôn ngữ hệ thống mặc định
+          // Ví dụ: Cấu hình hệ thống mặc định là "ja" nhưng URL lại là ://domain.com
+          if (isValidLocaleResult && segments[0] === defaultLocale) {
+            // Đồng bộ lại bộ nhớ hệ thống về ngôn ngữ mặc định này
+            localStorage.setItem('locale', defaultLocale);
+
+            // Bóc tách chữ tiền tố thừa đó ra (Ví dụ: bỏ "ja" ra khỏi ["ja", "about"] thành ["about"])
+            const cleanSegmentsResult = clientI18nHelpers.cleanSegments(segments, true);
+
+            // Tạo dựng URL sạch không chứa tiền tố trùng lặp mặc định
+            const cleanUrl = clientI18nHelpers.buildPath(
+              defaultLocale,
+              cleanSegmentsResult,
+              defaultLocale,
+            );
+
+            // Điều hướng ngay lập tức về trang sạch chuẩn SEO (://domain.com) và dừng tiến trình
+            window.location.href = cleanUrl;
             return;
           }
 
-          // Xác định ngôn ngữ mục tiêu (ưu tiên localStorage -> ngôn ngữ trình duyệt -> mặc định)
+          // Bước 1: Xác định ngôn ngữ mục tiêu người dùng mong muốn dựa trên độ ưu tiên
+          // Thứ tự: Lựa chọn lưu trữ trước đó (localStorage) -> Ngôn ngữ máy của trình duyệt -> Mặc định hệ thống
           let targetLocale = defaultLocale;
           if (storedLocale && locales.includes(storedLocale)) {
             targetLocale = storedLocale;
@@ -158,30 +173,40 @@ const isActive = (href: string) => {
             }
           }
 
-          // Nếu cần thay đổi ngôn ngữ so với URL hiện tại
+          // Bước 2: Kiểm tra sự lệch pha giữa ngôn ngữ đích và ngôn ngữ hiển thị trên URL hiện tại
           if (targetLocale !== currentUrlLocale) {
+            // Cập nhật bộ nhớ hệ thống theo ngôn ngữ đích mới
+            localStorage.setItem('locale', targetLocale);
+
+            // Tiến hành làm sạch mảng phân đoạn URL cũ
             const cleanSegmentsResult = clientI18nHelpers.cleanSegments(
               segments,
               isValidLocaleResult,
             );
+
+            // Tạo dựng URL đích mới phù hợp với cấu hình (Nếu bằng defaultLocale sẽ tự động giấu đi)
             const finalUrl = clientI18nHelpers.buildPath(
               targetLocale,
-              cleanSegmentsResultl,
+              cleanSegmentsResult,
               defaultLocale,
             );
 
-            localStorage.setItem('locale', targetLocale);
-
+            // Điều hướng sang trang đích và dừng tiến trình để chờ tải trang mới
             window.location.href = finalUrl;
+            return;
           }
 
-          document.documentElement.dataset.locale =
-            targetLocale !== currentUrlLocale ? targetLocale : currentUrlLocale;
+          // Nếu URL đã trùng khớp hoàn hảo với ngôn ngữ đích, đồng bộ giá trị chuẩn vào bộ nhớ lưu trữ
+          localStorage.setItem('locale', currentUrlLocale);
+
+          // Đính thuộc tính dữ liệu data-locale vào thẻ <html> để CSS/JS khác nhận diện điều khiển UI giao diện
+          document.documentElement.dataset.locale = currentUrlLocale;
         };
 
-        // Chạy ngay khi load trang đầu tiên nhằm chặn render sai ngôn ngữ
+        // Kích hoạt bộ lọc định tuyến ngay khi phân tích cú pháp mã HTML đầu tiên đầu tiên nhằm chặn render sai ngôn ngữ
         applyLocale();
-        // Chạy lại mỗi khi Astro thực hiện View Transition swap trang
+
+        // Kích hoạt lại bộ lọc mỗi khi hệ thống View Transitions của Astro thực hiện tráo đổi trang (swap)
         document.addEventListener('astro:after-swap', applyLocale);
       })();
     </script>
@@ -242,16 +267,19 @@ const isActive = (href: string) => {
       import { navigate } from 'astro:transitions/client';
       import { locales, locale as defaultLocale, type Locale } from '../i18n';
 
-      // Xử lý sự kiện click nút đổi ngôn ngữ bằng Event Delegation gán trực tiếp vào document
+      // Gán trực tiếp trình lắng nghe sự kiện click nút đổi ngôn ngữ
+      // bằng Event Delegation vào thẻ document toàn cục
       document.addEventListener('click', (event) => {
+        // Kiểm tra xem phần tử được click có chứa thuộc tính dữ liệu điều hướng đổi ngôn ngữ [data-locale-toggle] hay không
         if (!(event.target instanceof Element) || !event.target.closest('[data-locale-toggle]')) {
-          return;
+          return; // Nếu không phải nút đổi ngôn ngữ, bỏ qua hành động
         }
 
-        // Khởi tạo helper đầy đủ tính năng kết hợp cấu hình TypeScript
-        // Không cần truyền namespaceName nữa vì client script chạy độc lập bằng bộ biến import tĩnh
+        // Khởi tạo bộ công cụ helper i18n đầy đủ tính năng kết hợp cấu hình TypeScript
+        // Không cần truyền namespaceName vì client script chạy độc lập bằng bộ biến import tĩnh
         const clientI18nHelpers = createI18nHelper();
 
+        // Đọc dữ liệu URL hiện tại
         const segments = clientI18nHelpers.getSegments();
         const isValidLocaleResult = clientI18nHelpers.isValidLocale(segments[0], locales);
         const currentLocale = clientI18nHelpers.getCurrentLocale(
@@ -260,14 +288,15 @@ const isActive = (href: string) => {
           defaultLocale,
         );
 
-        // Xoay vòng lấy ngôn ngữ tiếp theo trong danh sách hỗ trợ
+        // Tính toán xoay vòng danh sách ngôn ngữ để tìm ra ngôn ngữ tiếp theo (Ví dụ: en -> ja -> vi -> en)
         const currentIndex = locales.indexOf(currentLocale as Locale);
         const nextLocale: Locale = locales[(currentIndex + 1) % locales.length];
 
-        // Lưu lại lựa chọn vào localStorage
+        // Lưu lựa chọn mới của người dùng vào bộ nhớ localStorage
         localStorage.setItem('locale', nextLocale);
 
-        // Tạo URL mới bằng helper (giữ nguyên các tham số query và hash nếu có)
+        // Xây dựng URL đích mới tinh gọn (giữ nguyên query, hash)
+        // Tự giấu tiền tố nếu nextLocale chính là defaultLocale)
         const cleanSegmentsResult = clientI18nHelpers.cleanSegments(segments, isValidLocaleResult);
         const finalUrl = clientI18nHelpers.buildPath(
           nextLocale,
@@ -275,7 +304,8 @@ const isActive = (href: string) => {
           defaultLocale,
         );
 
-        // Thực hiện chuyển trang mượt (soft navigation) qua router của Astro
+        // Chuyển trang mượt mà không tải lại toàn bộ tài nguyên nhờ cơ chế nội bộ
+        // Single Page App của Astro View Transitions
         navigate(finalUrl);
       });
     </script>
