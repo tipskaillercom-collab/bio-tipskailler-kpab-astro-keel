@@ -3,7 +3,13 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../lib/url';
 import { SITE } from '../../consts';
-import { t } from '../../i18n';
+import { type Locale, locale as defaultLocale, useTranslations } from '../../i18n';
+
+const { locale: propLocale } = Astro.props as { locale?: string };
+// Lấy locale từ Props, fallback về defaultLocale
+const locale = (propLocale ?? defaultLocale) as Locale;
+// Sử dụng useTranslations với locale của trang hiện tại
+const { t } = useTranslations(locale);
 
 const works = (await getCollection('works')).sort((a, b) => {
   const orderA = a.data.order ?? Number.MAX_SAFE_INTEGER;
@@ -39,7 +45,6 @@ const works = (await getCollection('works')).sort((a, b) => {
                 </>
               ))}
             </p>
-            {/* <p class="entry-meta">{work.data.tech.join(' / ')}</p> */}
             <h2>
               <a href={withBase(`/works/${work.id}/`)}>{work.data.title}</a>
             </h2>

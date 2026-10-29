@@ -1,0 +1,16 @@
+---
+import { alternateLocales } from '../../../i18n';
+import RootWorksPage from '../../works/index.astro';
+
+export function getStaticPaths() {
+  return alternateLocales.map((alternateLocale) => ({
+    params: { locale: alternateLocale },
+    props: { locale: alternateLocale },
+  }));
+}
+
+const { locale } = Astro.props;
+---
+
+<!-- Gọi component RootWorksPage và truyền locale vào qua props -->
+<RootWorksPage locale={locale} />
