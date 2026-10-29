@@ -12,11 +12,12 @@
         "naumovs.color-highlight",
         "daanrosendal.pinboard",
         "ryu1kn.partial-diff",
-        "funkyremi.vscode-google-translate"
+        "funkyremi.vscode-google-translate",
+        "github.vscode-github-actions"
       ]
     }
   },
   "remoteUser": "node",
   "forwardPorts": [4321],
-  "postCreateCommand": "curl -LsSf https://aider.chat/install.sh | sh && echo 'alias dev=\"npm run dev -- --host\"' >> ~/.bashrc && echo 'alias preview=\"npm run preview -- --host\"' >> ~/.bashrc && echo 'alias check=\"npm run check\"' >> ~/.bashrc && echo 'alias build-all=\"npm run build && npm run postbuild\"' >> ~/.bashrc"
+  "postCreateCommand": "curl -LsSf https://aider.chat/install.sh | sh && echo 'alias dev=\"npm run dev -- --host\"' >> ~/.bashrc && echo 'alias preview=\"npm run preview -- --host\"' >> ~/.bashrc && echo 'alias format=\"npm run format\"' >> ~/.bashrc && echo 'alias check=\"npm run check\"' >> ~/.bashrc && echo 'alias build-all=\"npm run build && npm run postbuild\"' >> ~/.bashrc"
 }
