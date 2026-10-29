@@ -9,27 +9,35 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Nạp các biến từ file .env vào môi trường
+const prefixEnv = 'APP_';
+const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), 'prefixEnv');
 const {
-  PUBLIC_APP_ENV,
-  PUBLIC_APP_PRODUCTION_URL,
-  PUBLIC_APP_PRODUCTION_BASE,
-  PUBLIC_APP_LOCAL_URL,
-  PUBLIC_APP_LOCAL_BASE,
-} = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), 'PUBLIC_');
+  APP_ENV,
+  APP_PRODUCTION_URL,
+  APP_PRODUCTION_BASE,
+  APP_DEVELOPMENT_URL,
+  APP_DEVELOPMENT_BASE,
+} = env;
+const isProd = APP_ENV === 'production';
+const APP_URL = isProd ? APP_PRODUCTION_URL : APP_DEVELOPMENT_URL;
+const APP_BASE = isProd ? APP_PRODUCTION_BASE : APP_DEVELOPMENT_BASE;
 
-const isProd = PUBLIC_APP_ENV === 'production';
-
-// Đọc và parse file cấu hình headers tự động
-const headersFilePath = path.resolve(
-  '.dev-resources/security/security-header/web-servers/docker/security-headers.json',
+const fileNameSecurityHeader = 'security-headers.json';
+const filePathSecurityHeader = path.resolve(
+  `.dev-resources/security/security-header/web-servers/docker/${fileNameSecurityHeader}`,
 );
-let securityHeaders = {}; // Hoặc bạn có thể dùng: /** @type {import('node:http').OutgoingHttpHeaders} */ ({});
+
+/** @type {Record<string, string>} */
+let securityHeaders = {};
 
 try {
-  const fileContent = fs.readFileSync(headersFilePath, 'utf-8');
-  securityHeaders = JSON.parse(fileContent);
+  const content = fs.readFileSync(filePathSecurityHeader, 'utf-8');
+  securityHeaders = JSON.parse(content);
+
+  console.log(`Đã load thành công file \`${fileNameSecurityHeader}\`.`);
+  // console.info('Nội dung file:', securityHeaders);
 } catch (error) {
-  console.warn('Không tìm thấy file security-headers.json, bỏ qua headers local dev.');
+  console.error(`Không thể load file \`${fileNameSecurityHeader}\`.`);
 }
 
 // https://astro.build/config
@@ -40,8 +48,8 @@ export default defineConfig({
   // or a `<user>.github.io` root site.
   // site: 'https://kpab.github.io',
   // base: '/astro-keel',
-  site: isProd ? PUBLIC_APP_PRODUCTION_URL : PUBLIC_APP_LOCAL_URL,
-  base: isProd ? PUBLIC_APP_PRODUCTION_BASE : PUBLIC_APP_LOCAL_BASE,
+  site: APP_URL,
+  base: APP_BASE,
   integrations: [mdx(), sitemap()],
   markdown: {
     processor: unified({
@@ -61,11 +69,11 @@ export default defineConfig({
   vite: {
     server: {
       watch: {
-        usePolling: true, // Ép Vite dùng phương pháp polling để bắt file thay đổi trong Docker
+        usePolling: true,
       },
     },
   },
   server: {
-    headers: /** @type {import('node:http').OutgoingHttpHeaders} */ (securityHeaders),
+    headers: securityHeaders,
   },
 });
