@@ -39,13 +39,10 @@ interface Props {
   description?: string;
   ogType?: 'website' | 'article';
   image?: string;
-  locale?: string; // Nhận locale từ Props nếu có
 }
 
-// Lấy locale từ props (hoặc Astro.params), fallback về defaultLocale
-const { locale: propLocale } = Astro.props;
-const locale = (propLocale ?? Astro.params.locale ?? defaultLocale) as Locale;
-
+// Lấy locale từ Astro.params, fallback về defaultLocale
+const locale = (Astro.params.locale ?? defaultLocale) as Locale;
 // Sử dụng useTranslations với locale của trang hiện tại
 const { navLabel, t } = useTranslations(locale);
 
