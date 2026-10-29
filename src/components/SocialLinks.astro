@@ -4,7 +4,19 @@
 // `currentColor`, so they follow the light/dark palettes automatically.
 import { SOCIAL_LINKS, type SocialIcon } from '../consts';
 import { withBase } from '../lib/url';
-import { t } from '../i18n';
+import { type Locale, useTranslations } from '../i18n';
+
+interface Props {
+  locale: string;
+}
+
+// Lấy toàn bộ Props
+const { locale: propLocale } = Astro.props;
+
+// Lấy locale từ Prop
+const locale = propLocale as Locale;
+// Sử dụng useTranslations với locale của trang hiện tại
+const { t } = useTranslations(locale);
 
 const ICONS: Record<SocialIcon, string> = {
   github:
