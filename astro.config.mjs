@@ -50,7 +50,32 @@ export default defineConfig({
   // base: '/astro-keel',
   site: APP_URL,
   base: APP_BASE,
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    sitemap(),
+    // GIẢI PHÁP: Inline Integration để tự động watch và ép reload khi file public/ thay đổi
+    {
+      name: 'watch-public-folder',
+      hooks: {
+        'astro:server:setup': ({ server }) => {
+          const publicPath = path.resolve('public');
+
+          // Thêm thư mục public vào bộ theo dõi của Vite Dev Server
+          server.watcher.add(publicPath);
+
+          // Khi có bất kỳ thay đổi nào trong thư mục public, gửi tín hiệu làm mới toàn trang
+          server.watcher.on('change', (file) => {
+            if (file.startsWith(publicPath)) {
+              server.ws.send({
+                type: 'full-reload',
+                path: '*',
+              });
+            }
+          });
+        },
+      },
+    },
+  ],
   markdown: {
     processor: unified({
       remarkPlugins: [remarkReadingTime],
@@ -69,7 +94,7 @@ export default defineConfig({
   vite: {
     server: {
       watch: {
-        usePolling: true,
+        usePolling: true, // Giữ Polling để hoạt động mượt mà trong Docker / Dev Container
       },
     },
   },
