@@ -12,27 +12,13 @@ import '../styles/global-addons.css';
 import { ClientRouter } from 'astro:transitions';
 import { withBase } from '../lib/url';
 import { SITE, NAV_ITEMS } from '../consts';
-import { locales, locale as defaultLocale, useTranslations, type Locale } from '../i18n';
+import { locale as defaultLocale, useTranslations, type Locale } from '../i18n';
 import CodeCopy from '../components/CodeCopy.astro';
 import SocialLinks from '../components/SocialLinks.astro';
-import { createLocaleSwitchHelper } from '../lib/client-locale-switch';
+import { clientLocaleSwitchHelpersScript } from '../scripts/locale-switch/init-locale-switch';
 
 // Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
-const serverLocaleSwitchHelper = createLocaleSwitchHelper();
-const NS_ClientLocaleSwitchHelper = '__clientLocaleSwitchHelper';
-
-// Ép toàn bộ logic các hàm thành chuỗi văn bản (String) để gán vào đối tượng toàn cục `window` trên trình duyệt
-const clientI18nHelpers = `
-  window.__NS_ClientLocaleSwitchHelper = "${NS_ClientLocaleSwitchHelper}";
-  window.${NS_ClientLocaleSwitchHelper} = window.${NS_ClientLocaleSwitchHelper} || {};
-
-  window.${NS_ClientLocaleSwitchHelper}.getSegments = ${serverLocaleSwitchHelper.getSegments.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.isValidLocale = ${serverLocaleSwitchHelper.isValidLocale.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.getCurrentLocale = ${serverLocaleSwitchHelper.getCurrentLocale.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.cleanSegments = ${serverLocaleSwitchHelper.cleanSegments.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.buildPath = ${serverLocaleSwitchHelper.buildPath.toString()};
-  window.${NS_ClientLocaleSwitchHelper} = {${NS_ClientLocaleSwitchHelper}: window["${NS_ClientLocaleSwitchHelper}"], locales: "${locales}", defaultLocale: "${defaultLocale}"};
-`;
+const clientLocalSwitchHelpers = clientLocaleSwitchHelpersScript('__clientLocaleSwitchHelper');
 
 interface Props {
   title?: string;
@@ -112,7 +98,7 @@ const isActive = (href: string) => {
     </script>
 
     <!-- Đưa bộ thư viện helper dạng chuỗi vào môi trường runtime của trình duyệt -->
-    <script is:inline set:html={clientI18nHelpers} />
+    <script is:inline set:html={clientLocalSwitchHelpers} />
     <!-- Script chặn render sai ngôn ngữ ngay trước khi trình duyệt vẽ giao diện (Anti-Flicker) -->
     <script is:inline src="/scripts/locale-switch.js"></script>
   </head>
@@ -169,7 +155,7 @@ const isActive = (href: string) => {
 
     <script>
       // Script bắt sự kiện click đổi ngôn ngữ
-      import '../scripts/locale-toggler.ts';
+      import '../scripts/locale-switch/locale-switch-toggler';
     </script>
   </body>
 </html>

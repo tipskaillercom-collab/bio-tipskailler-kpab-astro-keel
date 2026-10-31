@@ -1,6 +1,6 @@
-import { createLocaleSwitchHelper } from '../lib/client-locale-switch';
+import { createLocaleSwitchHelpers } from '../../helpers/locale-switch/locale-switch';
 import { navigate } from 'astro:transitions/client';
-import { locales, locale as defaultLocale, type Locale } from '../i18n';
+import { locales, locale as defaultLocale, type Locale } from '../../i18n';
 
 // Gán trực tiếp trình lắng nghe sự kiện click nút đổi ngôn ngữ
 // bằng Event Delegation vào thẻ document toàn cục
@@ -12,7 +12,7 @@ document.addEventListener('click', (event) => {
 
   // Khởi tạo bộ công cụ helper locale switch đầy đủ tính năng kết hợp cấu hình TypeScript
   // Không cần truyền namespaceName vì client script chạy độc lập bằng bộ biến import tĩnh
-  const clientLocaleToggleHelper = createLocaleSwitchHelper();
+  const clientLocaleToggleHelper = createLocaleSwitchHelpers();
 
   // Đọc dữ liệu URL hiện tại
   const segments = clientLocaleToggleHelper.getSegments();
