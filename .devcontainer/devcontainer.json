@@ -13,11 +13,14 @@
         "daanrosendal.pinboard",
         "ryu1kn.partial-diff",
         "funkyremi.vscode-google-translate",
-        "github.vscode-github-actions"
+        "github.vscode-github-actions",
+        "continue.continue",
+        "gruntfuggly.todo-tree",
+        "tctinh.universal-agent-quota-tracker"
       ]
     }
   },
   "remoteUser": "node",
   "forwardPorts": [4321],
-  "postCreateCommand": "curl -LsSf https://aider.chat/install.sh | sh && echo 'alias dev=\"npm run dev -- --host\"' >> ~/.bashrc && echo 'alias preview=\"npm run preview -- --host\"' >> ~/.bashrc && echo 'alias format=\"npm run format\"' >> ~/.bashrc && echo 'alias check=\"npm run check\"' >> ~/.bashrc && echo 'alias build-all=\"npm run build && npm run postbuild\"' >> ~/.bashrc"
+  "postCreateCommand": "sudo apt update && sudo apt install -y ripgrep curl && curl -LsSf https://aider.chat/install.sh | sh && echo 'alias dev=\"npm run dev -- --host\"' >> ~/.bashrc && echo 'alias preview=\"npm run preview -- --host\"' >> ~/.bashrc && echo 'alias format=\"npm run format\"' >> ~/.bashrc && echo 'alias check=\"npm run check\"' >> ~/.bashrc && echo 'alias build-all=\"npm run build && npm run postbuild\"' >> ~/.bashrc"
 }
