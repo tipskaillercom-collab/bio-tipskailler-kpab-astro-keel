@@ -1,5 +1,5 @@
 // Các hàm tiện ích xử lý URL và điều hướng ngôn ngữ ở phía Client (Trình duyệt)
-export function createI18nHelper() {
+export function createLocaleSwitchHelper() {
   // === NOTE: Trong đoạn này cả server/client đều đọc được ====
   // code...
   // ===========================================================

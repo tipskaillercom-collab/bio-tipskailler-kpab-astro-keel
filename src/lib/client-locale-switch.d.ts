@@ -1,5 +1,5 @@
 // Bộ giao diện công cụ xử lý đa ngôn ngữ động theo cấu hình hệ thống
-export interface I18nHelper {
+export interface LocaleSwitchHelper {
   // Lấy các phân đoạn (segments) từ đường dẫn URL hiện tại
   getSegments(): string[];
 
@@ -17,4 +17,4 @@ export interface I18nHelper {
 }
 
 // Hàm khởi tạo bộ công cụ
-export function createI18nHelper(): I18nHelper;
+export function createLocaleSwitchHelper(): LocaleSwitchHelper;
