@@ -15,10 +15,10 @@ import { SITE, NAV_ITEMS } from '../consts';
 import { locale as defaultLocale, useTranslations, type Locale } from '../i18n';
 import CodeCopy from '../components/CodeCopy.astro';
 import SocialLinks from '../components/SocialLinks.astro';
-import { clientLocaleSwitchHelpersScript } from '../scripts/locale-switch/init-locale-switch';
+import { getLocaleHelpersScript } from '../scripts/locale-switch/init-locale-switch';
 
 // Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
-const clientLocalSwitchHelpers = clientLocaleSwitchHelpersScript('__clientLocaleSwitchHelper');
+const localeHelpersInlineScript = getLocaleHelpersScript('__clientLocaleSwitchHelper');
 
 interface Props {
   title?: string;
@@ -98,9 +98,9 @@ const isActive = (href: string) => {
     </script>
 
     <!-- Đưa bộ thư viện helper dạng chuỗi vào môi trường runtime của trình duyệt -->
-    <script is:inline set:html={clientLocalSwitchHelpers} />
+    <script is:inline set:html={localeHelpersInlineScript} />
     <!-- Script chặn render sai ngôn ngữ ngay trước khi trình duyệt vẽ giao diện (Anti-Flicker) -->
-    <script is:inline src="/scripts/locale-switch.js"></script>
+    <script is:inline src="/scripts/locale-switch-anti-flicker.js"></script>
   </head>
   <body>
     <header class="site-header">

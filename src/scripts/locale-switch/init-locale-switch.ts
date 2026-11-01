@@ -4,24 +4,24 @@ import { createLocaleSwitchHelpers } from '../../helpers/locale-switch/locale-sw
 /**
  * Hàm trả về đoạn script chuỗi chứa các helper lựa chọn ngôn ngữ để gán vào window trên client
  */
-export function clientLocaleSwitchHelpersScript(nsName: string) {
+export function getLocaleHelpersScript(nsName: string) {
   // Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
-  const localeSwitchHelpers = createLocaleSwitchHelpers();
-  const NS_ClientLocaleSwitchHelper = nsName;
+  const helpers = createLocaleSwitchHelpers();
+  const nsKey = nsName;
 
   // Ép toàn bộ logic các hàm thành chuỗi văn bản (String) để gán vào đối tượng toàn cục `window` trên trình duyệt
-  const clientLocalSwitchHelpers = `
-  window.__NS_ClientLocaleSwitchHelper = "${NS_ClientLocaleSwitchHelper}";
-  window.${NS_ClientLocaleSwitchHelper} = window.${NS_ClientLocaleSwitchHelper} || {};
+  const localeHelpersInlineScript = `
+  window.__NS_ClientLocaleSwitchHelper = "${nsKey}";
+  window.${nsKey} = window.${nsKey} || {};
 
-  window.${NS_ClientLocaleSwitchHelper}.getSegments = ${localeSwitchHelpers.getSegments.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.isValidLocale = ${localeSwitchHelpers.isValidLocale.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.getCurrentLocale = ${localeSwitchHelpers.getCurrentLocale.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.cleanSegments = ${localeSwitchHelpers.cleanSegments.toString()};
-  window.${NS_ClientLocaleSwitchHelper}.buildPath = ${localeSwitchHelpers.buildPath.toString()};
+  window.${nsKey}.getSegments = ${helpers.getSegments.toString()};
+  window.${nsKey}.isValidLocale = ${helpers.isValidLocale.toString()};
+  window.${nsKey}.getCurrentLocale = ${helpers.getCurrentLocale.toString()};
+  window.${nsKey}.cleanSegments = ${helpers.cleanSegments.toString()};
+  window.${nsKey}.buildPath = ${helpers.buildPath.toString()};
 
-  window.${NS_ClientLocaleSwitchHelper} = {${NS_ClientLocaleSwitchHelper}: window["${NS_ClientLocaleSwitchHelper}"], locales: "${locales}", defaultLocale: "${defaultLocale}"};
+  window.${nsKey} = { helpers: window["${nsKey}"], locales: "${locales}", defaultLocale: "${defaultLocale}" };
 `;
 
-  return clientLocalSwitchHelpers;
+  return localeHelpersInlineScript;
 }

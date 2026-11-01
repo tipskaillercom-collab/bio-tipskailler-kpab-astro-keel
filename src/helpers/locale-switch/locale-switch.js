@@ -4,7 +4,7 @@ export function createLocaleSwitchHelpers() {
   // code...
   // ===========================================================
 
-  const helper = {
+  const helpers = {
     // NOTE: Tại đây trở xuống, Phía Client đều không đọc được các giá trị, hàm hoặc bất cứ gì ở đoạn trên
 
     // Tách đường dẫn URL thành các phân đoạn mảng (Ví dụ: "/vi/posts/abc" -> ["vi", "posts", "abc"])
@@ -18,30 +18,30 @@ export function createLocaleSwitchHelpers() {
     },
 
     // Xác định ngôn ngữ hiện tại của URL. Nếu phân đoạn đầu tiên hợp lệ thì trả về nó, ngược lại dùng mặc định hệ thống
-    getCurrentLocale: (segments, isValidLocaleResult, defaultLocale) => {
-      const firstSegment = segments[0];
-      return segments.length > 0 && isValidLocaleResult ? firstSegment : defaultLocale;
+    getCurrentLocale: (pathSegments, hasLocalePrefix, defaultLocale) => {
+      const firstSegment = pathSegments[0];
+      return pathSegments.length > 0 && hasLocalePrefix ? firstSegment : defaultLocale;
     },
 
     // Loại bỏ mã ngôn ngữ khỏi mảng phân đoạn nếu URL đó đang chứa mã ngôn ngữ hợp lệ
-    cleanSegments: (segments, isValidLocaleResult) => {
-      const clean = [...segments];
-      if (isValidLocaleResult) {
+    cleanSegments: (pathSegments, hasLocalePrefix) => {
+      const clean = [...pathSegments];
+      if (hasLocalePrefix) {
         clean.shift(); // Xóa phần tử đầu tiên (Ví dụ: ["vi", "about"] -> ["about"])
       }
       return clean;
     },
 
     // Xây dựng đường dẫn chuẩn SEO
-    buildPath: (targetLocale, cleanSegmentsResult, defaultLocale) => {
+    buildPath: (preferredLocale, cleanSegments, defaultLocale) => {
       const newPath =
-        targetLocale === defaultLocale
-          ? '/' + cleanSegmentsResult.join('/') // Nếu là ngôn ngữ mặc định hệ thống: giấu tiền tố đi (Ví dụ: /about)
-          : `/${targetLocale}/` + cleanSegmentsResult.join('/'); // Nếu là ngôn ngữ phụ: thêm tiền tố vào (Ví dụ: /vi/about)
+        preferredLocale === defaultLocale
+          ? '/' + cleanSegments.join('/') // Nếu là ngôn ngữ mặc định hệ thống: giấu tiền tố đi (Ví dụ: /about)
+          : `/${preferredLocale}/` + cleanSegments.join('/'); // Nếu là ngôn ngữ phụ: thêm tiền tố vào (Ví dụ: /vi/about)
 
       // Loại bỏ các ký tự gạch chéo lặp thừa (//) và ghép nối lại chuỗi query (?...) hoặc hash (#...) nguyên bản
       return newPath.replace(/\/+/g, '/') + window.location.search + window.location.hash;
     },
   };
-  return helper;
+  return helpers;
 }
