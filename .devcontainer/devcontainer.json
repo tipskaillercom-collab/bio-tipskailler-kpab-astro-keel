@@ -16,7 +16,8 @@
         "github.vscode-github-actions",
         "continue.continue",
         "gruntfuggly.todo-tree",
-        "tctinh.universal-agent-quota-tracker"
+        "tctinh.universal-agent-quota-tracker",
+        "thewalking-dev.ai-insights"
       ]
     }
   },
