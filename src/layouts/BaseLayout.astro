@@ -6,9 +6,9 @@ import '@fontsource/public-sans/600.css';
 import '@fontsource/public-sans/700.css';
 import '@fontsource-variable/jetbrains-mono/wght.css';
 import '../styles/global.css';
-import '../styles/global-overrides.css';
-import '../styles/global-extended.css';
-import '../styles/global-addons.css';
+// import '../styles/global-overrides.css';
+// import '../styles/global-extended.css';
+// import '../styles/global-addons.css';
 import { ClientRouter } from 'astro:transitions';
 import { withBase } from '../lib/url';
 import { SITE, NAV_ITEMS } from '../consts';
@@ -16,6 +16,7 @@ import { locale as defaultLocale, useTranslations, type Locale } from '../i18n';
 import CodeCopy from '../components/CodeCopy.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import { getLocaleHelpersScript } from '../scripts/locale-switch/init-locale-switch';
+import ThemeToggle from '../components/ThemeToggle.astro';
 
 // Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
 const localeHelpersInlineScript = getLocaleHelpersScript('__clientLocaleSwitchHelper');
@@ -82,20 +83,9 @@ const isActive = (href: string) => {
     {imageURL && <meta name="twitter:image" content={imageURL} />}
     <slot name="head" />
     <ClientRouter />
-    <script is:inline>
-      // Runs before paint on the initial load, and again on `astro:after-swap`
-      // because the router resets `<html>` attributes during soft navigation.
-      // IIFE so top-level consts can't clash if the script ever re-runs.
-      (() => {
-        const applyTheme = () => {
-          const storedTheme = localStorage.getItem('theme');
-          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          document.documentElement.dataset.theme = storedTheme || (prefersDark ? 'dark' : 'light');
-        };
-        applyTheme();
-        document.addEventListener('astro:after-swap', applyTheme);
-      })();
-    </script>
+
+    <!-- Script tĩnh chặn nhấp nháy giao diện (Anti-Flicker) chạy trước khi paint -->
+    <script is:inline src="/scripts/theme-init-anti-flicker.js"></script>
 
     <!-- Đưa bộ thư viện helper dạng chuỗi vào môi trường runtime của trình duyệt -->
     <script is:inline set:html={localeHelpersInlineScript} />
@@ -117,9 +107,7 @@ const isActive = (href: string) => {
           ))
         }
       </nav>
-      <button class="theme-toggle" type="button" aria-label={t('theme.toggle')} data-theme-toggle>
-        <span aria-hidden="true"></span>
-      </button>
+      <ThemeToggle label={t('theme.toggle')} />
 
       <button class="locale-toggle" type="button" aria-label="dfsadfdsdafasdf" data-locale-toggle>
         <span aria-hidden="true">sssssssssssssss</span>
@@ -139,18 +127,9 @@ const isActive = (href: string) => {
       <SocialLinks locale={locale} />
     </footer>
     <CodeCopy />
+    <!-- Script bắt sự kiện click đổi theme từ src/scripts/theme/ -->
     <script>
-      // Delegated to `document` so the handler survives view-transition swaps
-      // that replace the toggle button element.
-      document.addEventListener('click', (event) => {
-        if (!(event.target instanceof Element) || !event.target.closest('[data-theme-toggle]')) {
-          return;
-        }
-        const current = document.documentElement.dataset.theme;
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.dataset.theme = next;
-        localStorage.setItem('theme', next);
-      });
+      import '../scripts/theme/theme-toggle';
     </script>
 
     <script>
