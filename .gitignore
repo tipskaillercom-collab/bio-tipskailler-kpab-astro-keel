@@ -36,6 +36,7 @@ pnpm-debug.log*
 .my-resources/
 .vscode/
 # tests/
+CONVENTIONS.md
 
 # tipskailler exception
-.aider.conf.yml
+# .aider.conf.yml
