@@ -55,7 +55,10 @@ function createMatchMediaMock(initialPrefersDark: boolean = false) {
     // Helper tùy chỉnh để trigger sự kiện đổi theme OS trong test
     dispatchOsChange(newPrefersDark: boolean) {
       matches = newPrefersDark;
-      const event = { matches: newPrefersDark, media: '(prefers-color-scheme: dark)' } as MediaQueryListEvent;
+      const event = {
+        matches: newPrefersDark,
+        media: '(prefers-color-scheme: dark)',
+      } as MediaQueryListEvent;
       listeners.forEach((listener) => listener(event));
     },
   };
@@ -91,7 +94,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
 
     // 3. Setup default matchMedia mock (Default là Light Mode OS)
     matchMediaMock = createMatchMediaMock(false);
-    vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn().mockImplementation(() => matchMediaMock),
+    );
 
     // 4. Reset modules để re-evaluate closure trong theme-toggle.ts
     vi.resetModules();
@@ -107,7 +113,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
   describe('1. Kịch bản Khởi tạo & Ưu tiên (Initial Theme Selection Order)', () => {
     test('1.1. Truy cập lần đầu + OS là Dark Mode -> data-theme phải là dark', () => {
       matchMediaMock = createMatchMediaMock(true); // OS prefers dark
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
 
       runAntiFlickerScript();
 
@@ -116,7 +125,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
 
     test('1.2. Truy cập lần đầu + OS là Light Mode -> data-theme phải là light', () => {
       matchMediaMock = createMatchMediaMock(false); // OS prefers light
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
 
       runAntiFlickerScript();
 
@@ -126,7 +138,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
     test('1.3. localStorage = "dark" nhưng OS = Light -> localStorage phải ghi đè OS (kết quả "dark")', () => {
       localStorage.setItem(TEST_CONFIG.STORAGE_KEY, 'dark');
       matchMediaMock = createMatchMediaMock(false); // OS = light
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
 
       runAntiFlickerScript();
 
@@ -136,7 +151,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
     test('1.4. localStorage = "light" nhưng OS = Dark -> localStorage phải ghi đè OS (kết quả "light")', () => {
       localStorage.setItem(TEST_CONFIG.STORAGE_KEY, 'light');
       matchMediaMock = createMatchMediaMock(true); // OS = dark
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
 
       runAntiFlickerScript();
 
@@ -150,7 +168,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
   describe('2. Kịch bản Hạ cấp An toàn (Graceful Degradation / RAM Fallback)', () => {
     test('2.1. Khi localStorage bị chặn (ném SecurityError), Anti-Flicker tự fallback về OS setting mà không crash', () => {
       matchMediaMock = createMatchMediaMock(true); // OS = dark
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
 
       // Giả lập trình duyệt chặn localStorage
       vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
@@ -169,7 +190,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
 
     test('2.2. Khi localStorage bị chặn khi ghi (setItem throw), click toggle vẫn cập nhật DOM và dùng RAM fallback', async () => {
       matchMediaMock = createMatchMediaMock(false);
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
       runAntiFlickerScript();
 
       // Nạp script tương tác
@@ -201,7 +225,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
   describe('3. Kịch bản Đồng bộ Động (Live OS Scheme Syncing)', () => {
     test('3.1. Chưa có localStorage: Khi OS đổi từ Light sang Dark -> DOM tự cập nhật sang "dark"', () => {
       matchMediaMock = createMatchMediaMock(false); // Ban đầu OS = light
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
       runAntiFlickerScript();
 
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
@@ -215,7 +242,10 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
     test('3.2. Đã chọn localStorage: Khi OS đổi theme -> DOM giữ nguyên theme đã chọn', () => {
       localStorage.setItem(TEST_CONFIG.STORAGE_KEY, 'light');
       matchMediaMock = createMatchMediaMock(false);
-      vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => matchMediaMock));
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
       runAntiFlickerScript();
 
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
