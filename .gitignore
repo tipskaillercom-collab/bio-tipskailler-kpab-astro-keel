@@ -35,7 +35,7 @@ pnpm-debug.log*
 .github/
 .my-resources/
 .vscode/
-tests/
+# tests/
 
 # tipskailler exception
 !.aider.conf.yml
