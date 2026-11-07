@@ -1,6 +1,12 @@
 ---
 import type { Page } from 'astro';
-import { t } from '../i18n';
+import { type Locale, locale as defaultLocale, useTranslations } from '../i18n';
+
+const { locale: propLocale } = Astro.props as { locale?: string };
+// Lấy locale từ Props, fallback về defaultLocale
+const locale = (propLocale ?? defaultLocale) as Locale;
+// Sử dụng useTranslations với locale của trang hiện tại
+const { t } = useTranslations(locale);
 
 interface Props {
   page: Page<unknown>;
