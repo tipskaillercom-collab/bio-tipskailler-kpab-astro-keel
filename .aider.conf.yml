@@ -1,6 +1,0 @@
-input-history-file: .aider.input.history
-chat-history-file: .aider.chat.history
-
-# Ép Aider luôn nạp file quy ước làm tài liệu nền của não bộ
-file:
-  - CONVENTIONS.md
