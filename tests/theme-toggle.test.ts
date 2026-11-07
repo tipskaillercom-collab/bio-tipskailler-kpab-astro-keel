@@ -183,7 +183,7 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
       expect(() => runAntiFlickerScript()).not.toThrow();
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[Theme Anti-Flicker] Storage access denied'),
+        '[Theme Anti-Flicker] Storage access denied, fallback to OS setting.',
         expect.any(Error),
       );
     });
