@@ -4,25 +4,29 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "astro-build.astro-vscode",
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode",
-        "editorconfig.editorconfig",
-        "bradlc.vscode-tailwindcss",
-        "naumovs.color-highlight",
-        "daanrosendal.pinboard",
-        "ryu1kn.partial-diff",
-        "funkyremi.vscode-google-translate",
-        "github.vscode-github-actions",
-        "continue.continue",
-        "gruntfuggly.todo-tree",
-        "tctinh.universal-agent-quota-tracker",
-        "thewalking-dev.ai-insights"
-      ]
+        "astro-build.astro-vscode", // recommendations: Language support for Astro
+        "dbaeumer.vscode-eslint", // Tìm và fix với ngôn ngữ Javascript
+        "esbenp.prettier-vscode", // recommendations: Format code với prettier
+        "editorconfig.editorconfig", // Đề xuất loại ngôn ngữ phù hợp với 1 tab file được tạo mới dựa trên nội dung ngôn ngữ đó
+        "bradlc.vscode-tailwindcss", // Công cụ gợi ý code dành cho Tailwind CSS
+        "naumovs.color-highlight", // Tô màu dòng code màu của css
+        "daanrosendal.pinboard", // Pin files
+        "ryu1kn.partial-diff", // So sánh file
+        "funkyremi.vscode-google-translate", // Dịch ra ngôn ngữ mong muốn, dùng: ALT + SHIFT + T
+        "github.vscode-github-actions", // Action Github
+        "continue.continue", // Continue
+        "gruntfuggly.todo-tree", // Nhắc nhở việc làm
+        "tctinh.universal-agent-quota-tracker", // Thống kê số lượng token còn lại của AI
+        "thewalking-dev.ai-insights", // Thống kê số lượng token còn lại của AI
+        "redhat.vscode-yaml", // Dành cho Yaml
+        "ms-playwright.playwright" // Tự động hóa kiểm thử (E2E Test)
+      ],
+      "settings": {}
     }
   },
   "containerEnv": {
-    "GEMINI_API_KEY": "${GEMINI_API_KEY}"
+    // Sử dụng cú pháp ${localEnv:TEN_BIEN} để lấy giá trị từ máy host
+    "GEMINI_API_KEY": "${localEnv:GEMINI_API_KEY}"
   },
   "remoteUser": "node",
   "forwardPorts": [4321],
