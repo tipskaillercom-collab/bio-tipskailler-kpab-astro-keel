@@ -1,0 +1,17 @@
+---
+/**
+ * Component: src/components/ThemeToggle.astro
+ * Mô tả: UI Component nút bấm chuyển đổi theme.
+ */
+
+interface Props {
+  label?: string;
+  className?: string;
+}
+
+const { label = 'Toggle Theme', className = 'theme-toggle' } = Astro.props;
+---
+
+<button type="button" class={className} aria-label={label} data-theme-toggle>
+  <span aria-hidden="true"></span>
+</button>
