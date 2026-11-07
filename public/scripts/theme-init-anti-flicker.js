@@ -32,4 +32,26 @@
 
   // STEP 3: Lắng nghe sự kiện hoán đổi trang trong Astro (View Transitions)
   document.addEventListener('astro:after-swap', STEP_1_APPLY_INITIAL_THEME);
+
+  // STEP 4: Lắng nghe sự kiện đổi theme trên Hệ điều hành nếu chưa thiết lập localStorage
+  try {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleOsThemeChange = (e) => {
+      try {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
+        }
+      } catch (_err) {
+        document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
+      }
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleOsThemeChange);
+    } else if (mediaQuery.addListener) {
+      mediaQuery.addListener(handleOsThemeChange);
+    }
+  } catch (error) {
+    console.warn('[Theme Anti-Flicker] matchMedia listener setup failed.', error);
+  }
 })();
