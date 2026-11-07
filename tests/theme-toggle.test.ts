@@ -89,8 +89,9 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
     document.body.innerHTML = `
       <header>
         <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle theme">
-          <span>Toggle</span>
+          <span id="toggle-inner-span">Toggle</span>
         </button>
+        <p id="random-paragraph">Outside paragraph element</p>
       </header>
     `;
 
@@ -346,6 +347,126 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
       }
 
       // Event Delegation bắt được sự kiện và chuyển đổi sang dark
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
+      expect(localStorage.getItem(TEST_CONFIG.STORAGE_KEY)).toBe('dark');
+    });
+  });
+
+  // =========================================================================
+  // KỊCH BẢN 5: CA KIỂM THỬ NÂNG CAO (STRESS TEST & EDGE CASES)
+  // =========================================================================
+  describe('5. Ca kiểm thử Nâng cao (Stress Test & Edge Cases)', () => {
+    test('5.1. Event Delegation: Click vào thẻ child <span> bên trong nút bấm vẫn kích hoạt closest() chính xác', async () => {
+      runAntiFlickerScript();
+      await import('../src/scripts/theme/theme-toggle');
+
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+
+      const innerSpan = document.getElementById('toggle-inner-span')!;
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      });
+      innerSpan.dispatchEvent(clickEvent);
+
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
+      expect(localStorage.getItem(TEST_CONFIG.STORAGE_KEY)).toBe('dark');
+    });
+
+    test('5.2. Event Delegation: Click vào element ngẫu nhiên không có selector [data-theme-toggle] không gây thay đổi trạng thái', async () => {
+      runAntiFlickerScript();
+      await import('../src/scripts/theme/theme-toggle');
+
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+
+      const randomParagraph = document.getElementById('random-paragraph')!;
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      });
+      randomParagraph.dispatchEvent(clickEvent);
+
+      // DOM và localStorage giữ nguyên không đổi
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+      expect(localStorage.getItem(TEST_CONFIG.STORAGE_KEY)).toBeNull();
+    });
+
+    test('5.3. Stress Test (Rapid Clicks): Click liên tiếp 7 lần (lẻ -> dark) và 8 lần (chẵn -> light) đảo chiều chính xác', async () => {
+      runAntiFlickerScript();
+      await import('../src/scripts/theme/theme-toggle');
+
+      const button = document.querySelector<HTMLButtonElement>(TEST_CONFIG.TOGGLE_SELECTOR)!;
+
+      // Click 7 lần liên tục
+      for (let i = 0; i < 7; i++) {
+        button.dispatchEvent(
+          new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            composed: true,
+          }),
+        );
+      }
+
+      // 7 lần click từ initial light -> dark
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
+      expect(localStorage.getItem(TEST_CONFIG.STORAGE_KEY)).toBe('dark');
+
+      // Click thêm 1 lần nữa (tổng 8 lần click)
+      button.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+        }),
+      );
+
+      // 8 lần click -> light
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+      expect(localStorage.getItem(TEST_CONFIG.STORAGE_KEY)).toBe('light');
+    });
+
+    test('5.4. Corrupted Dataset Attack: Gán data-theme giá trị rác ("invalid-theme"), STEP_1_GET_CURRENT_THEME fallback về "light" và chuyển sang "dark"', async () => {
+      runAntiFlickerScript();
+      await import('../src/scripts/theme/theme-toggle');
+
+      // Cố tình hạ độc dataset bằng giá trị rác
+      document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE] = 'invalid-theme';
+
+      const button = document.querySelector<HTMLButtonElement>(TEST_CONFIG.TOGGLE_SELECTOR)!;
+      button.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+        }),
+      );
+
+      // Hệ thống xem 'invalid-theme' không phải 'dark' nên coi như 'light' -> tính nextTheme là 'dark'
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
+      expect(localStorage.getItem(TEST_CONFIG.STORAGE_KEY)).toBe('dark');
+    });
+
+    test('5.5. Corrupted Dataset Attack: Xóa sạch data-theme (undefined), hệ thống vẫn hoạt động an toàn', async () => {
+      runAntiFlickerScript();
+      await import('../src/scripts/theme/theme-toggle');
+
+      // Cố tình xóa thuộc tính dataset
+      document.documentElement.removeAttribute(`data-${TEST_CONFIG.DATA_ATTRIBUTE}`);
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBeUndefined();
+
+      const button = document.querySelector<HTMLButtonElement>(TEST_CONFIG.TOGGLE_SELECTOR)!;
+      button.dispatchEvent(
+        new MouseEvent('click', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+        }),
+      );
+
+      // System recovers: undefined -> fallback 'light' -> toggles to 'dark'
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(localStorage.getItem(TEST_CONFIG.STORAGE_KEY)).toBe('dark');
     });
