@@ -2,7 +2,13 @@
 // Giscus comments — opt-in. Everything below (markup, styles, *and* script)
 // sits behind the `enabled` check, so a default build ships zero Giscus bytes.
 import { GISCUS } from '../consts';
-import { t } from '../i18n';
+import { type Locale, locale as defaultLocale, useTranslations } from '../i18n';
+
+const { locale: propLocale } = Astro.props as { locale?: string };
+// Lấy locale từ Props, fallback về defaultLocale
+const locale = (propLocale ?? defaultLocale) as Locale;
+// Sử dụng useTranslations với locale của trang hiện tại
+const { t } = useTranslations(locale);
 
 // Guard on the IDs too: a half-filled config would render a widget that can
 // never resolve a discussion.
