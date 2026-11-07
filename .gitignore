@@ -38,6 +38,6 @@ pnpm-debug.log*
 # tests/
 
 # tipskailler exception
-!.aider.conf.yml
+# !.aider.conf.yml
 
 
