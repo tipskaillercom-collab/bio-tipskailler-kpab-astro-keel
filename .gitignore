@@ -30,7 +30,8 @@ pnpm-debug.log*
 
 # tipskailler folders ignore
 .aider*
-.devcontainer
+.continue*
+# .devcontainer
 .github/
 .my-resources/
 .vscode/

@@ -1,0 +1,13 @@
+---
+import { alternateLocales } from '../../i18n';
+import RootIndex from '../index.astro';
+
+export function getStaticPaths() {
+  return alternateLocales.map((alternateLocale) => ({
+    params: { locale: alternateLocale },
+  }));
+}
+---
+
+<!-- Gọi component RootIndex và truyền locale vào qua props -->
+<RootIndex />

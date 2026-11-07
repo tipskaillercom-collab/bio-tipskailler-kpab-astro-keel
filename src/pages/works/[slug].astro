@@ -1,16 +1,39 @@
 ---
+import type { CollectionEntry } from 'astro:content';
 import { getCollection, render } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { withBase } from '../../lib/url';
-import { formatDate, t } from '../../i18n';
+import { type Locale, locale as defaultLocale, useTranslations } from '../../i18n';
 
-export async function getStaticPaths() {
-  const entries = await getCollection('works');
-  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+// 1. Định nghĩa rõ ràng: Props của tôi có thể đến từ trang [locale] HOẶC từ getStaticPaths nội bộ
+interface Props {
+  locale?: Locale; // Do trang [locale] truyền xuống
+  entry: CollectionEntry<'works'>; // Có thể do trang [locale] truyền HOẶC từ getStaticPaths nội bộ sinh ra
 }
 
-const { entry } = Astro.props;
+// 2. Bóc tách trực tiếp một lần duy nhất ở đầu trang
+const { entry, locale: passedLocale } = Astro.props as Props;
+
+// 3. Xác định locale chuẩn (Nếu có passedLocale từ trang cha thì xài, không thì dùng mặc định)
+const locale = (passedLocale ?? defaultLocale) as Locale;
+// Sử dụng useTranslations với locale của trang hiện tại
+const { formatDate, t } = useTranslations(locale);
+
+// 4. Hàm sinh đường dẫn tĩnh cho trang gốc
+export async function getStaticPaths() {
+  const entries = await getCollection('works');
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+// export async function getStaticPaths() {
+//   const entries = await getCollection('works');
+//   return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+// }
+
+// 5. Render nội dung (Biến `entry` lúc này cực kỳ sạch vì đã được bóc tách ở bước 2)
 const { Content } = await render(entry);
 ---
 
@@ -39,7 +62,6 @@ const { Content } = await render(entry);
             ))
           }
         </div>
-        <!-- <span>{entry.data.tech.join(' / ')}</span> -->
       </div>
       <div class="action-row">
         {

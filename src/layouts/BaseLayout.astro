@@ -10,11 +10,15 @@ import '../styles/global-overrides.css';
 import '../styles/global-extended.css';
 import '../styles/global-addons.css';
 import { ClientRouter } from 'astro:transitions';
-import { withBase, withLocalePath } from '../lib/url';
+import { withBase } from '../lib/url';
 import { SITE, NAV_ITEMS } from '../consts';
-import { useTranslation, locales, locale as defaultLocale } from '../i18n';
+import { locale as defaultLocale, useTranslations, type Locale } from '../i18n';
 import CodeCopy from '../components/CodeCopy.astro';
 import SocialLinks from '../components/SocialLinks.astro';
+import { getLocaleHelpersScript } from '../scripts/locale-switch/init-locale-switch';
+
+// Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
+const localeHelpersInlineScript = getLocaleHelpersScript('__clientLocaleSwitchHelper');
 
 interface Props {
   title?: string;
@@ -23,9 +27,10 @@ interface Props {
   image?: string;
 }
 
-const currentLocale = Astro.params.locale ?? defaultLocale;
-
-const { t, navLabel } = useTranslation(currentLocale);
+// Lấy locale từ Astro.params, fallback về defaultLocale
+const locale = (Astro.params.locale ?? defaultLocale) as Locale;
+// Sử dụng useTranslations với locale của trang hiện tại
+const { navLabel, t } = useTranslations(locale);
 
 const siteName = SITE.title;
 
@@ -34,16 +39,8 @@ const { title = siteName, description = SITE.description, ogType = 'website', im
 // `Astro.site` comes from `site` in astro.config.mjs; fall back to the
 // request URL during dev so canonical/OG links still resolve.
 const siteBase = Astro.site ?? new URL(Astro.url.origin);
-// const canonicalURL = new URL(Astro.url.pathname, siteBase);
-const canonicalURL = new URL(withLocalePath(Astro.url.pathname, currentLocale), siteBase);
-// const localePrefix = currentLocale === defaultLocale ? '' : `/${currentLocale}`;
-// const imageURL = image
-//   ? new URL(`${localePrefix}${image}`, siteBase)
-//   : new URL(withBase(SITE.ogImage), siteBase);
-const imageURL = image
-  ? new URL(withLocalePath(image, currentLocale), siteBase)
-  : new URL(withBase(SITE.ogImage), siteBase);
-
+const canonicalURL = new URL(Astro.url.pathname, siteBase);
+const imageURL = image ? new URL(image, siteBase) : new URL(withBase(SITE.ogImage), siteBase);
 const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
 
 const currentPath = Astro.url.pathname;
@@ -54,12 +51,7 @@ const isActive = (href: string) => {
 ---
 
 <!doctype html>
-<html
-  data-locales={JSON.stringify(locales)}
-  data-current-locale={currentLocale}
-  data-default-locale={defaultLocale}
-  lang={currentLocale}
->
+<html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
@@ -80,7 +72,7 @@ const isActive = (href: string) => {
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonicalURL} />
     {/* Open Graph wants `ja_JP`, not the `ja-JP` of `<html lang>`. */}
-    <meta property="og:locale" content={currentLocale.replace('-', '_')} />
+    <meta property="og:locale" content={locale.replace('-', '_')} />
     {imageURL && <meta property="og:image" content={imageURL} />}
 
     {/* Twitter */}
@@ -90,15 +82,6 @@ const isActive = (href: string) => {
     {imageURL && <meta name="twitter:image" content={imageURL} />}
     <slot name="head" />
     <ClientRouter />
-    <script>
-      declare global {
-        interface Window {
-          globalApplyLocale: () => void;
-          globalLocales: string[];
-          globalDefaultLocale: string;
-        }
-      }
-    </script>
     <script is:inline>
       // Runs before paint on the initial load, and again on `astro:after-swap`
       // because the router resets `<html>` attributes during soft navigation.
@@ -111,81 +94,13 @@ const isActive = (href: string) => {
         };
         applyTheme();
         document.addEventListener('astro:after-swap', applyTheme);
-
-        window.globalLocales = JSON.parse(document.documentElement.dataset.locales);
-        window.globalDefaultLocale = document.documentElement.dataset.defaultLocale;
-
-        const applyLocale = () => {
-          const storedLocale = localStorage.getItem('locale');
-          if (!storedLocale) return;
-
-          const locales = window.globalLocales;
-          const defaultLocale = window.globalDefaultLocale;
-
-          if (!locales.includes(storedLocale)) return;
-
-          const segments = window.location.pathname.split('/').filter(Boolean);
-
-          // Phát hiện xem URL hiện tại đang ở ngôn ngữ nào (Dựa vào segment đầu tiên có length === 2)
-          const currentUrlLocale =
-            segments.length > 0 && locales.includes(segments[0]) ? segments[0] : defaultLocale;
-
-          // Nếu ngôn ngữ người dùng lưu trong localStorage ĐÃ TRÙNG với ngôn ngữ trên URL hiện tại -> DỪNG NGAY, không làm gì cả!
-          if (storedLocale === currentUrlLocale) {
-            return;
-          }
-
-          // --- Nếu chưa trùng, ta tiến hành chuyển hướng sang đúng đường dẫn của storedLocale ---
-
-          let cleanSegments = [...segments];
-          // Nếu URL cũ đang có sẵn tiền tố ngôn ngữ cũ, ta gỡ nó ra trước
-          if (cleanSegments.length > 0 && locales.includes(cleanSegments[0])) {
-            cleanSegments.shift();
-          }
-
-          let newPath = '';
-          if (storedLocale === defaultLocale) {
-            // Bản default (ví dụ: 'en') thì không có tiền tố ở URL gốc
-            newPath = '/' + cleanSegments.join('/');
-          } else {
-            // Các bản khác thì thêm /vi/ hoặc /ja/ lên đầu
-            newPath = `/${storedLocale}/` + cleanSegments.join('/');
-          }
-
-          const finalUrl =
-            newPath.replace(/\/+/g, '/') + window.location.search + window.location.hash;
-
-          // Thực hiện chuyển hướng thẳng đến URL mới
-          window.location.href = finalUrl;
-
-          // if (segments.length > 0 && locales.includes(segments[0])) {
-          //   segments.shift();
-          // }
-
-          // let newPath = '';
-          // if (storedLocale === defaultLocale) {
-          //   newPath = '/' + segments.join('/');
-          // } else {
-          //   newPath = `/${storedLocale}/` + segments.join('/');
-          // }
-
-          // const finalUrl =
-          //   newPath.replace(/\/+/g, '/') + window.location.search + window.location.hash;
-
-          // const currentFullUrl =
-          //   window.location.pathname + window.location.search + window.location.hash;
-
-          // // Chỉ chuyển hướng nếu URL mới thực sự khác URL hiện tại (Chống lặp vô hạn)
-          // if (finalUrl !== currentFullUrl) {
-          //   window.location.href = finalUrl;
-          // }
-        };
-
-        applyLocale();
-        window.globalApplyLocale = applyLocale;
-        document.addEventListener('astro:after-swap', applyLocale);
       })();
     </script>
+
+    <!-- Đưa bộ thư viện helper dạng chuỗi vào môi trường runtime của trình duyệt -->
+    <script is:inline set:html={localeHelpersInlineScript} />
+    <!-- Script chặn render sai ngôn ngữ ngay trước khi trình duyệt vẽ giao diện (Anti-Flicker) -->
+    <script is:inline src="/scripts/locale-switch-anti-flicker.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -221,11 +136,9 @@ const isActive = (href: string) => {
         <a href={withBase('/blog/')}>{t('footer.notes')}</a>
         <a href="https://almanac.p4ni.com" target="_blank" rel="noopener noreferrer">Almanac ↗</a>
       </div>
-      <SocialLinks />
+      <SocialLinks locale={locale} />
     </footer>
-
     <CodeCopy />
-
     <script>
       // Delegated to `document` so the handler survives view-transition swaps
       // that replace the toggle button element.
@@ -238,25 +151,11 @@ const isActive = (href: string) => {
         document.documentElement.dataset.theme = next;
         localStorage.setItem('theme', next);
       });
+    </script>
 
-      document.addEventListener('click', (event) => {
-        if (!(event.target instanceof Element) || !event.target.closest('[data-locale-toggle]')) {
-          return;
-        }
-        const segments = window.location.pathname.split('/').filter(Boolean);
-
-        const locales = window.globalLocales;
-        const defaultLocale = window.globalDefaultLocale;
-        const currentLocale =
-          segments.length > 0 && locales.includes(segments[0]) ? segments[0] : defaultLocale;
-
-        const currentIndexLocale = locales.indexOf(currentLocale);
-        const nextIndexLocale = (currentIndexLocale + 1) % locales.length;
-        const nextLocale = locales[nextIndexLocale];
-
-        localStorage.setItem('locale', nextLocale);
-        window.globalApplyLocale();
-      });
+    <script>
+      // Script bắt sự kiện click đổi ngôn ngữ
+      import '../scripts/locale-switch/locale-switch-toggler';
     </script>
   </body>
 </html>
