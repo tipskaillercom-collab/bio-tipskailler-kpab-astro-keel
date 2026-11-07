@@ -76,8 +76,14 @@ function runAntiFlickerScript(): void {
 
 describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', () => {
   let matchMediaMock: ReturnType<typeof createMatchMediaMock>;
+  const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
 
   beforeEach(() => {
+    // Khôi phục localStorage về thuộc tính ban đầu
+    if (originalLocalStorageDescriptor) {
+      Object.defineProperty(window, 'localStorage', originalLocalStorageDescriptor);
+    }
+
     // 1. Reset DOM
     document.documentElement.removeAttribute(`data-${TEST_CONFIG.DATA_ATTRIBUTE}`);
     document.body.innerHTML = `
@@ -89,7 +95,11 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
     `;
 
     // 2. Clear LocalStorage
-    localStorage.clear();
+    try {
+      localStorage.clear();
+    } catch (_e) {
+      // Bỏ qua nếu localStorage đang bị giả lập khóa
+    }
     vi.restoreAllMocks();
 
     // 3. Setup default matchMedia mock (Default là Light Mode OS)
@@ -104,6 +114,9 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
   });
 
   afterEach(() => {
+    if (originalLocalStorageDescriptor) {
+      Object.defineProperty(window, 'localStorage', originalLocalStorageDescriptor);
+    }
     vi.unstubAllGlobals();
   });
 
@@ -173,9 +186,12 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
         vi.fn().mockImplementation(() => matchMediaMock),
       );
 
-      // Giả lập trình duyệt chặn localStorage
-      vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-        throw new DOMException('Access denied', 'SecurityError');
+      // Giả lập trình duyệt chặn hoàn toàn quyền truy cập localStorage bằng Object.defineProperty
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          throw new DOMException('Access denied', 'SecurityError');
+        },
+        configurable: true,
       });
 
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -183,7 +199,7 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
       expect(() => runAntiFlickerScript()).not.toThrow();
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(consoleWarnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[Theme Anti-Flicker] Storage access denied'),
+        '[Theme Anti-Flicker] Storage access denied, fallback to OS setting.',
         expect.any(Error),
       );
     });
@@ -199,9 +215,22 @@ describe('Hệ thống Theme Toggle & Anti-Flicker (Production-Ready Tests)', ()
       // Nạp script tương tác
       await import('../src/scripts/theme/theme-toggle');
 
-      // Giả lập chặn ghi localStorage
-      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-        throw new DOMException('QuotaExceededError or SecurityError', 'SecurityError');
+      // Giả lập chặn ghi vào localStorage thông qua Object.defineProperty
+      const realLocalStorage = window.localStorage;
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          return {
+            getItem: (key: string) => realLocalStorage.getItem(key),
+            setItem: () => {
+              throw new DOMException('QuotaExceededError or SecurityError', 'SecurityError');
+            },
+            removeItem: (key: string) => realLocalStorage.removeItem(key),
+            clear: () => realLocalStorage.clear(),
+            length: realLocalStorage.length,
+            key: (index: number) => realLocalStorage.key(index),
+          };
+        },
+        configurable: true,
       });
 
       const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
