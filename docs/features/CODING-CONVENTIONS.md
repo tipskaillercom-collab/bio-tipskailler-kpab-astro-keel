@@ -1,0 +1,29 @@
+# AI Agent Feature Coding Directives (Mandatory Standards)
+
+Tài liệu này định nghĩa các quy tắc **bắt buộc** mà AI Agent phải tuân thủ tuyệt đối khi viết code, xây dựng tính năng, component và refactor trong toàn bộ dự án.
+
+---
+
+## 1. Kiến trúc Code & Phong cách Lập trình (Step Functions & Strict Types)
+
+- **Step Functions:** Mọi logic xử lý phức tạp **BẮT BUỘC** phải được bóc tách thành các hàm tuần tự theo bước rõ ràng (`STEP_1_...`, `STEP_2_...`, `STEP_3_...`) giống như phong cách thiết kế Anti-Flicker và Theme Toggle.
+- **Strict Typing:** Các file được phép dùng type/interface (như `.ts` hoặc phần Frontmatter của `.astro`) phải tuân thủ nghiêm ngặt kiểu dữ liệu, không dùng kiểu `any` tùy tiện.
+- **Error Handling & Console Logging:**
+  - Luôn bọc các thao tác rủi ro (localStorage, DOM manipulation bất đồng bộ, API calls) trong khối `try...catch`.
+  - **LUÔN DÙNG** các hàm `console` (`console.log`, `console.warn`, `console.error`) kèm theo tiền tố module cụ thể (ví dụ: `[Theme Toggle]`, `[Locale Switch]`) để xuất thông tin ra console, giúp việc debug sau này dễ dàng.
+
+---
+
+## 2. Quy tắc Tái sử dụng Code (DRY - Don't Repeat Yourself)
+
+- **Ngưỡng 2 lần:** Bất kỳ đoạn code logic nào xuất hiện từ **2 lần trở lên**, AI Agent **BẮT BUỘC** phải trích xuất (extract) thành một hàm độc lập.
+- **Quy tắc phân rã thư mục Helpers:**
+  - Helper mang tính năng riêng biệt (ví dụ: chuyển đổi ngôn ngữ): Đặt vào thư mục riêng của tính năng đó trong helpers (`src/helpers/locale-switch/`).
+  - Helper dùng chung toàn cục hoặc phục vụ test: Đặt vào thư mục `src/helpers/` hoặc `tests/` tương ứng. Nếu cần tạo thư mục con mới, AI Agent phải tuân thủ cấu trúc hiện tại và đề xuất rõ ràng.
+
+---
+
+## 3. Quản lý Component & Giao diện
+
+- **Componentization:** Tách nhỏ giao diện thành các Astro Component độc lập, dễ quản lý và tái sử dụng (áp dụng cho cả code chính lẫn code test giao diện).
+- **Chú thích tiếng Việt:** Mọi hàm, component, và các bước logic chính **BẮT BUỘC** phải có chú thích (comment) giải thích chi tiết bằng **tiếng Việt** rõ ràng, dễ hiểu.

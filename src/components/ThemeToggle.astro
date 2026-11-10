@@ -5,13 +5,12 @@
  */
 
 interface Props {
-  label?: string;
-  className?: string;
+  label: string;
 }
 
-const { label = 'Toggle Theme', className = 'theme-toggle' } = Astro.props;
+const { label } = Astro.props;
 ---
 
-<button type="button" class={className} aria-label={label} data-theme-toggle>
+<button type="button" class="theme-toggle" aria-label={label} data-theme-toggle>
   <span aria-hidden="true"></span>
 </button>

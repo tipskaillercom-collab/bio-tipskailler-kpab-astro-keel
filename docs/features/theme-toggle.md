@@ -5,10 +5,12 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 ### 1. 📋 PM & UX Spec (Yêu cầu sản phẩm & Trải nghiệm)
 
 - **Mục tiêu:** Cho phép người dùng chuyển đổi linh hoạt giữa giao diện Sáng (Light) và Tối (Dark) để bảo vệ mắt và tăng trải nghiệm đọc.
+  <!-- // TODO: Làm sao để test nút toggle này luôn nằm bên góc phải của nhiều thiết bị như: PC, Laptop, Smart Phone, Table.. -->
 - **Vị trí UI:** Nút chuyển đổi (Toggle Button) nằm trên `<header>` góc phải, cạnh bộ đổi ngôn ngữ.
 - **Trạng thái mặc định:**
   - Nếu người dùng ghé thăm lần đầu: Tự động phát hiện cài đặt của hệ điều hành máy tính (`prefers-color-scheme`).
   - Nếu đã chọn trước đó: Ưu tiên giá trị đã lưu trong máy.
+    <!-- // TODO: kiểm tra xem có đúng là button không? -->
 - **Accessibility (a11y):** Sử dụng thẻ `<button>` chuẩn, hỗ trợ điều hướng bằng phím Tab/Enter, có `aria-label="Chuyển đổi giao diện Sáng/Tối"`.
 
 ---
@@ -42,7 +44,7 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 
 ### 4. 💻 Implementation (Chi tiết từng bước)
 
-#### Bước 4.1: Định nghĩa Token màu CSS (`src/styles/global.css`)
+#### Bước 4.1: Định nghĩa Token màu CSS `global.css` (`src/styles/global.css`)
 
 ```css src/styles/global.css
 :root {
@@ -122,9 +124,13 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 }
 ```
 
-#### Bước 4.2: Tạo File Script Tĩnh Anti-Flicker (`public/scripts/theme-init-anti-flicker.js`)
+#### Bước 4.2: Tạo File Script Tĩnh Anti-Flicker `theme-init-anti-flicker.js` (`public/scripts/theme-init-anti-flicker.js`)
 
 > **Quy tắc Anti-Flicker:** Tách logic thực thi thô ra file JS tĩnh độc lập nằm trong `public/scripts/` để nạp trực tiếp qua thẻ `<script is:inline src="...">` trong `<head>`.
+
+| Tệp                        | Trách nhiệm chính                                                                 | Xử lý khi nào?                                   |
+| -------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------ |
+| theme-init-anti-flicker.js | Chống chớp màn hình + Lắng nghe thay đổi từ Hệ điều hành (nếu user chưa tự chọn). | Ngay khi tải trang & liên tục ngầm ở background. |
 
 ```javascript public/scripts/theme-init-anti-flicker.js
 /**
@@ -137,22 +143,23 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
   const STORAGE_KEY = 'theme';
   const DATA_ATTRIBUTE = 'theme';
 
+  // Lấy trạng thái dark mode từ Hệ điều hành
+  const getOSPreference = () =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
   // STEP 1: Đọc trạng thái và gán data-theme lên <html>
   const STEP_1_APPLY_INITIAL_THEME = () => {
     try {
       // 1. Kiểm tra theme đã lưu trong localStorage
       const storedTheme = localStorage.getItem(STORAGE_KEY);
-      // 2. Kiểm tra cấu hình màu của Hệ điều hành
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      // 3. Ưu tiên: localStorage -> OS preference -> 'light'
-      const theme = storedTheme || (prefersDark ? 'dark' : 'light');
-      // 4. Gán attribute trực tiếp lên HTML root element
+      // 2. Ưu tiên: localStorage -> OS preference -> 'light'
+      const theme = storedTheme || getOSPreference();
+      // 3. Gán attribute trực tiếp lên HTML root element
       document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
     } catch (error) {
       // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
       console.warn('[Theme Anti-Flicker] Storage access denied, fallback to OS setting.', error);
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.dataset[DATA_ATTRIBUTE] = prefersDark ? 'dark' : 'light';
+      document.documentElement.dataset[DATA_ATTRIBUTE] = getOSPreference();
     }
   };
 
@@ -161,10 +168,31 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 
   // STEP 3: Lắng nghe sự kiện hoán đổi trang trong Astro (View Transitions)
   document.addEventListener('astro:after-swap', STEP_1_APPLY_INITIAL_THEME);
+
+  // STEP 4: Lắng nghe sự kiện đổi theme trên Hệ điều hành nếu chưa thiết lập localStorage
+  try {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    mediaQuery.addEventListener('change', (e) => {
+      try {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+          document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
+        }
+      } catch (_err) {
+        document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
+      }
+    });
+  } catch (error) {
+    console.warn('[Theme Anti-Flicker] matchMedia listener setup failed.', error);
+  }
 })();
 ```
 
-#### Bước 4.3: Tạo Logic Interactive Toggle Script (`src/scripts/theme/theme-toggle.ts`)
+#### Bước 4.3: Tạo Logic Interactive Toggle Script `theme-toggle.ts` (`src/scripts/theme/theme-toggle.ts`)
+
+| Tệp             | Trách nhiệm chính                                                                                            | Xử lý khi nào?                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| theme-toggle.ts | Xử lý sự kiện Click chuột của người dùng + Lưu trạng thái thủ công (có cơ chế RAM dự phòng nếu kẹt Storage). | Chỉ chạy khi user tương tác (click). |
 
 ```typescript src/scripts/theme/theme-toggle.ts
 /**
@@ -231,7 +259,7 @@ document.addEventListener('click', (event: MouseEvent): void => {
 
 #### Bước 4.4: Tạo Component `ThemeToggle.astro` (`src/components/ThemeToggle.astro`)
 
-```astro src/components/ThemeToggle.astro
+```tsx src/components/ThemeToggle.astro
 ---
 /**
  * Component: src/components/ThemeToggle.astro
@@ -239,21 +267,20 @@ document.addEventListener('click', (event: MouseEvent): void => {
  */
 
 interface Props {
-  label?: string;
-  className?: string;
+  label: string;
 }
 
-const { label = 'Toggle Theme', className = 'theme-toggle' } = Astro.props;
+const { label } = Astro.props;
 ---
 
-<button type="button" class={className} aria-label={label} data-theme-toggle>
+<button type="button" class="theme-toggle" aria-label={label} data-theme-toggle>
   <span aria-hidden="true"></span>
 </button>
 ```
 
-#### Bước 4.5: Tích hợp vào Layout Chính (`src/layouts/BaseLayout.astro`)
+#### Bước 4.5: Tích hợp vào Layout Chính `BaseLayout.astro` (`src/layouts/BaseLayout.astro`)
 
-```astro src/layouts/BaseLayout.astro
+```tsx src/layouts/BaseLayout.astro
 ---
 import ThemeToggle from '../components/ThemeToggle.astro';
 ---
@@ -288,7 +315,7 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 ---
 
 ### 🔍 Kết quả đạt được sau kiểm thử:
-
-- ✅ **Chuẩn kiến trúc Anti-Flicker:** Logic Anti-Flicker nằm trong file tĩnh `/scripts/theme-init-anti-flicker.js` ở `public/`, nạp qua `<script is:inline src="...">` cực nhẹ và nhanh.
+<!-- // TODO: thông báo kết quả sau khi thử nghiệm tại đây -->
+<!-- - ✅ **Chuẩn kiến trúc Anti-Flicker:** Logic Anti-Flicker nằm trong file tĩnh `/scripts/theme-init-anti-flicker.js` ở `public/`, nạp qua `<script is:inline src="...">` cực nhẹ và nhanh.
 - ✅ **Đồng bộ kiến trúc với `locale-switch`:** Cách triển khai 100% khớp với pattern hiện tại của dự án.
-- ✅ **Code sạch & chuẩn TypeScript:** Tách biệt 3 file rõ ràng, có đầy đủ Step Functions, Strict Types và Error Handling.
+- ✅ **Code sạch & chuẩn TypeScript:** Tách biệt 3 file rõ ràng, có đầy đủ Step Functions, Strict Types và Error Handling. -->

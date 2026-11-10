@@ -8,22 +8,23 @@
   const STORAGE_KEY = 'theme';
   const DATA_ATTRIBUTE = 'theme';
 
+  // Lấy trạng thái dark mode từ Hệ điều hành
+  const getOSPreference = () =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
   // STEP 1: Đọc trạng thái và gán data-theme lên <html>
   const STEP_1_APPLY_INITIAL_THEME = () => {
     try {
       // 1. Kiểm tra theme đã lưu trong localStorage
       const storedTheme = localStorage.getItem(STORAGE_KEY);
-      // 2. Kiểm tra cấu hình màu của Hệ điều hành
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      // 3. Ưu tiên: localStorage -> OS preference -> 'light'
-      const theme = storedTheme || (prefersDark ? 'dark' : 'light');
-      // 4. Gán attribute trực tiếp lên HTML root element
+      // 2. Ưu tiên: localStorage -> OS preference -> 'light'
+      const theme = storedTheme || getOSPreference();
+      // 3. Gán attribute trực tiếp lên HTML root element
       document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
     } catch (error) {
       // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
       console.warn('[Theme Anti-Flicker] Storage access denied, fallback to OS setting.', error);
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.dataset[DATA_ATTRIBUTE] = prefersDark ? 'dark' : 'light';
+      document.documentElement.dataset[DATA_ATTRIBUTE] = getOSPreference();
     }
   };
 
@@ -36,7 +37,8 @@
   // STEP 4: Lắng nghe sự kiện đổi theme trên Hệ điều hành nếu chưa thiết lập localStorage
   try {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleOsThemeChange = (e) => {
+
+    mediaQuery.addEventListener('change', (e) => {
       try {
         if (!localStorage.getItem(STORAGE_KEY)) {
           document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
@@ -44,13 +46,7 @@
       } catch (_err) {
         document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
       }
-    };
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleOsThemeChange);
-    } else if (mediaQuery.addListener) {
-      mediaQuery.addListener(handleOsThemeChange);
-    }
+    });
   } catch (error) {
     console.warn('[Theme Anti-Flicker] matchMedia listener setup failed.', error);
   }
