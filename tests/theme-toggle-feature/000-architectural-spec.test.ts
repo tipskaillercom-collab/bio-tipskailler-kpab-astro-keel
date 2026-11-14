@@ -91,6 +91,54 @@ describe('000: Architectural Specification Tests', () => {
       // ASSERT: Ưu tiên thiết lập người dùng đã lưu ('dark') đè lên cấu hình OS ('light')
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
     });
+
+    test('1.4. Khởi tạo khi localStorage = dark & OS = dark -> localStorage ghi đè OS', () => {
+      // ARRANGE: Hệ điều hành là Dark mode nhưng người dùng đã lưu chế độ 'dark' trước đó
+      matchMediaMock = createMatchMediaMock(true);
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
+      localStorage.setItem(TEST_CONFIG.STORAGE_KEY, 'dark');
+
+      // ACT: Chạy script Anti-Flicker khởi tạo
+      runAntiFlickerScript();
+
+      // ASSERT: Ưu tiên thiết lập người dùng đã lưu ('dark') đè lên cấu hình OS ('dark')
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
+    });
+
+    test('1.5. Khởi tạo khi localStorage = light & OS = dark -> localStorage ghi đè OS', () => {
+      // ARRANGE: Hệ điều hành là Dark mode nhưng người dùng đã lưu chế độ 'light' trước đó
+      matchMediaMock = createMatchMediaMock(true);
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
+      localStorage.setItem(TEST_CONFIG.STORAGE_KEY, 'light');
+
+      // ACT: Chạy script Anti-Flicker khởi tạo
+      runAntiFlickerScript();
+
+      // ASSERT: Ưu tiên thiết lập người dùng đã lưu ('light') đè lên cấu hình OS ('dark')
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+    });
+
+    test('1.6. Khởi tạo khi localStorage = light & OS = light -> localStorage ghi đè OS', () => {
+      // ARRANGE: Hệ điều hành là Light mode nhưng người dùng đã lưu chế độ 'light' trước đó
+      matchMediaMock = createMatchMediaMock(false);
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
+      localStorage.setItem(TEST_CONFIG.STORAGE_KEY, 'light');
+
+      // ACT: Chạy script Anti-Flicker khởi tạo
+      runAntiFlickerScript();
+
+      // ASSERT: Ưu tiên thiết lập người dùng đã lưu ('light') đè lên cấu hình OS ('light')
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+    });
   });
 
   describe('2. Graceful Degradation / RAM Fallback', () => {
@@ -118,7 +166,7 @@ describe('000: Architectural Specification Tests', () => {
       // ASSERT: Thuộc tính data-theme tự hạ cấp an toàn về theme OS và đưa ra cảnh báo warn
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(warnSpy).toHaveBeenCalledWith(
-        '[Theme Anti-Flicker] Storage access denied, fallback to OS setting.',
+        TEST_CONFIG.LOG_MESSAGES.ANTI_FLICKER_STORAGE_DENIED,
         expect.any(Error),
       );
     });
@@ -132,7 +180,10 @@ describe('000: Architectural Specification Tests', () => {
       );
       runAntiFlickerScript();
 
-      await import('../../src/scripts/theme/theme-toggle');
+      const { getFallbackRamTheme } = await import('../../src/scripts/theme/theme-toggle');
+
+      // Kiểm tra trạng thái ban đầu trước khi click: RAM fallback phải là null
+      expect(getFallbackRamTheme()).toBeNull();
 
       const realLocalStorage = window.localStorage;
       Object.defineProperty(window, 'localStorage', {
@@ -160,10 +211,70 @@ describe('000: Architectural Specification Tests', () => {
 
       // ASSERT: Giao diện DOM vẫn đổi sang 'dark' thành công nhờ sử dụng bộ nhớ tạm (RAM Fallback)
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
+      expect(getFallbackRamTheme()).toBe('dark');
       expect(warnSpy).toHaveBeenCalledWith(
-        '[Theme Toggle] Cannot write to localStorage. Using RAM fallback.',
+        TEST_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED,
         expect.any(Error),
       );
+    });
+
+    test('2.3. localStorage.setItem bị chặn -> Click thêm lần nữa cập nhật lại RAM fallback', async () => {
+      // ARRANGE: Khởi tạo môi trường 'light' và chặn localStorage.setItem
+      matchMediaMock = createMatchMediaMock(false);
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => matchMediaMock),
+      );
+      runAntiFlickerScript();
+
+      const { getFallbackRamTheme } = await import('../../src/scripts/theme/theme-toggle');
+
+      const realLocalStorage = window.localStorage;
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          return {
+            getItem: (key: string) => realLocalStorage.getItem(key),
+            setItem: () => {
+              throw new DOMException('Access denied', 'SecurityError');
+            },
+            removeItem: (key: string) => realLocalStorage.removeItem(key),
+            clear: () => realLocalStorage.clear(),
+            length: realLocalStorage.length,
+            key: (index: number) => realLocalStorage.key(index),
+          };
+        },
+        configurable: true,
+      });
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const button = document.querySelector(TEST_CONFIG.TOGGLE_SELECTOR) as HTMLButtonElement;
+
+      // ACT 1: Click lần 1 ('light' -> 'dark')
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+      await yieldToEventLoop();
+
+      // ASSERT: `ACT 1`
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
+      expect(getFallbackRamTheme()).toBe('dark');
+      expect(warnSpy).toHaveBeenCalledWith(
+        TEST_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED,
+        expect.any(Error),
+      );
+
+      // ACT 2: Click lần 2 ('dark' -> 'light')
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
+      await yieldToEventLoop();
+
+      // ASSERT: `ACT 2`: DOM và biến RAM fallback cùng đảo ngược về 'light'.
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+      expect(getFallbackRamTheme()).toBe('light');
+      expect(warnSpy).toHaveBeenCalledWith(
+        TEST_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED,
+        expect.any(Error),
+      );
+
+      // ASSERT: `ACT 1` + `ACT 1` : Cảnh báo gọi tổng cộng 2 lần
+      expect(warnSpy).toHaveBeenCalledTimes(2);
     });
   });
 

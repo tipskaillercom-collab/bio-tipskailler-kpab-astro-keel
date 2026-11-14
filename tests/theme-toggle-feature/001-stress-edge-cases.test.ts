@@ -30,6 +30,7 @@ describe('001: Stress Testing & Edge Case Mutation Tests', () => {
       </div>
     `;
 
+    // Giả lập Hệ điều hành đang ở chế độ Light mode
     matchMediaMock = createMatchMediaMock(false);
     vi.stubGlobal(
       'matchMedia',

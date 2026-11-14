@@ -31,6 +31,7 @@ describe('002: Security Hardening & Threat Mitigation Tests', () => {
       </button>
     `;
 
+    // Giả lập Hệ điều hành đang ở chế độ Light mode
     const matchMediaMock = createMatchMediaMock(false);
     vi.stubGlobal(
       'matchMedia',

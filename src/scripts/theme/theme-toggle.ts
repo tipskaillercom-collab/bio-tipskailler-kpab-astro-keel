@@ -58,3 +58,10 @@ document.addEventListener('click', (event: MouseEvent): void => {
   const nextTheme = STEP_2_CALCULATE_NEXT_THEME(currentTheme);
   STEP_3_EXECUTE_THEME_UPDATE(nextTheme);
 });
+
+/**
+ * Getter phục vụ kiểm thử (Testing) và kiểm tra trạng thái RAM Fallback
+ */
+export function getFallbackRamTheme(): ThemeMode | null {
+  return fallbackRamThemeStorage;
+}

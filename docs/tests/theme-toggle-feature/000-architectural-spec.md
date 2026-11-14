@@ -21,16 +21,21 @@ Yêu cầu mã test phải bao quát toàn diện và không bỏ sót các trư
 
 1. **Kịch bản Khởi tạo & Ưu tiên (Initial Theme Selection Order):**
 
-- Lần đầu truy cập (localStorage trống): Hệ thống phải đọc chính xác cấu hình Hệ điều hành thông qua `window.matchMedia('(prefers-color-scheme: dark)')` cho cả hai trường hợp dark và light độc lập.
-- Các lần truy cập tiếp theo (Đồng nhất & Ghi đè):
-  - Trường hợp localStorage và OS trùng khớp hoàn toàn (`localStorage = 'dark'` & `OS = dark`, hoặc `localStorage = 'light'` & `OS = light`): `data-theme` phải phản ánh chính xác giá trị đó.
-  - Trường hợp xung đột (`localStorage = 'dark'` nhưng `OS = light`, hoặc ngược lại): `localStorage` bắt buộc phải ghi đè hoàn toàn cấu hình Hệ điều hành.
+- Lần đầu truy cập (localStorage trống): Hệ thống phải đọc chính xác cấu hình Hệ điều hành thông qua `window.matchMedia('(prefers-color-scheme: dark)')` cho cả hai trường hợp dark và light độc lập (OS
+= dark -> 'dark', OS = light -> 'light').
+- Các lần truy cập tiếp theo (Đồng nhất & Ghi đè đầy đủ 4 trường hợp):
+  - `localStorage = 'dark'` & `OS = light` -> `localStorage` ghi đè OS (kết quả: 'dark').
+  - `localStorage = 'dark'` & `OS = dark` -> `localStorage` ghi đè OS (kết quả: 'dark').
+  - `localStorage = 'light'` & `OS = dark` -> `localStorage` ghi đè OS (kết quả: 'light').
+  - `localStorage = 'light'` & `OS = light` -> `localStorage` ghi đè OS (kết quả: 'light').
 
 2. **Kịch bản Hạ cấp An toàn (Graceful Degradation / RAM Fallback):**
 
 - Giả lập tình huống trình duyệt chặn quyền truy cập `localStorage` (ném ra ngoại lệ `SecurityError` khi gọi `getItem` hoặc `setItem`).
 - Kiểm tra xem script Anti-Flicker có tự hạ cấp an toàn về OS preference mà không làm sập ứng dụng (không throw unhandled error) hay không.
 - Kiểm tra xem nút bấm tương tác có tự động lưu trạng thái mới vào biến tạm trên RAM (`fallbackRamThemeStorage`) khi click đổi theme trong môi trường bị chặn Storage hay không, đồng thời xác thực sự tồn tại của thông báo `console.warn` tương ứng.
+- Kiểm tra tính liên tục của RAM Fallback khi người dùng click đổi theme nhiều lần liên tiếp trong môi trường bị chặn Storage: DOM và biến RAM fallback phải đồng bộ đảo
+ngược trạng thái qua lại chính xác ('light' <-> 'dark'), đồng thời ghi nhận đúng số lần phát cảnh báo `console.warn`.
 
 3. **Kịch bản Đồng bộ Động (Live OS Scheme Syncing):**
 

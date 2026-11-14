@@ -19,6 +19,11 @@ export const TEST_CONFIG = {
   DATA_ATTRIBUTE: 'theme',
   // CSS Selector của nút bấm kích hoạt chuyển đổi giao diện
   TOGGLE_SELECTOR: '[data-theme-toggle]',
+  LOG_MESSAGES: {
+    ANTI_FLICKER_STORAGE_DENIED:
+      '[Theme Anti-Flicker] Storage access denied, fallback to OS setting.',
+    TOGGLE_STORAGE_DENIED: '[Theme Toggle] Cannot write to localStorage. Using RAM fallback.',
+  },
 } as const;
 
 /**

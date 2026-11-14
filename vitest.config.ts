@@ -16,9 +16,11 @@ export default defineConfig({
     // Cấu hình giao diện Vitest UI
     ui: true,
     api: {
+      // allowExec: true, // Cho phép bấm chạy/lưu file từ Vitest UI
       port: 4322,
       host: true, // Cho phép kết nối từ bên ngoài container,
     },
+    // silent: false, // Đảm bảo Vitest không ẩn log console
     // Giữ nguyên các module gốc của Node.js (như node:fs, node:path) khi chạy vi.resetModules()
     server: {
       deps: {
