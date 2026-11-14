@@ -1,3 +1,5 @@
+/// <reference types="vitest/config" />
+
 /**
  * File: vitest.config.ts
  * Mô tả: Cấu hình Vitest chạy kiểm thử DOM bằng Happy-DOM nhẹ và tối ưu cho Dev Container.

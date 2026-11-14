@@ -73,7 +73,7 @@ describe('002: Security Hardening & Threat Mitigation Tests', () => {
       // ASSERT: Trang không bị crash, ứng dụng tự chuyển đổi mượt sang RAM fallback và thông báo console.warn
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(warnSpy).toHaveBeenCalledWith(
-        '[Theme Toggle] Cannot write to localStorage. Using RAM fallback.',
+        TEST_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED,
         expect.any(Error),
       );
     });

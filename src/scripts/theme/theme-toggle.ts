@@ -11,6 +11,9 @@ const THEME_TOGGLE_CONFIG = {
   STORAGE_KEY: 'theme',
   DATA_ATTRIBUTE: 'theme',
   TOGGLE_SELECTOR: '[data-theme-toggle]',
+  LOG_MESSAGES: {
+    TOGGLE_STORAGE_DENIED: '[Theme Toggle] Cannot write to localStorage. Using RAM fallback.',
+  },
 } as const;
 
 // Biến bộ nhớ RAM dự phòng khi localStorage bị chặn
@@ -42,7 +45,7 @@ function STEP_3_EXECUTE_THEME_UPDATE(nextTheme: ThemeMode): void {
   try {
     localStorage.setItem(THEME_TOGGLE_CONFIG.STORAGE_KEY, nextTheme);
   } catch (error) {
-    console.warn('[Theme Toggle] Cannot write to localStorage. Using RAM fallback.', error);
+    console.warn(THEME_TOGGLE_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED, error);
     fallbackRamThemeStorage = nextTheme;
   }
 }

@@ -8,6 +8,10 @@
   const STORAGE_KEY = 'theme';
   const DATA_ATTRIBUTE = 'theme';
   const VALID_THEMES = ['light', 'dark'];
+  const LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED =
+    '[Theme Anti-Flicker] Storage access denied, fallback to OS setting.';
+  const LOG_MESSAGES_ANTI_FLICKER_MATCH_MEDIA_LISTENER_SETUP_FAILED =
+    '[Theme Anti-Flicker] matchMedia listener setup failed.';
 
   // Lấy trạng thái dark mode từ Hệ điều hành
   const getOSPreference = () =>
@@ -30,7 +34,7 @@
       document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
     } catch (error) {
       // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
-      console.warn('[Theme Anti-Flicker] Storage access denied, fallback to OS setting.', error);
+      console.warn(LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED, error);
       document.documentElement.dataset[DATA_ATTRIBUTE] = getOSPreference();
     }
   };
@@ -55,6 +59,6 @@
       }
     });
   } catch (error) {
-    console.warn('[Theme Anti-Flicker] matchMedia listener setup failed.', error);
+    console.warn(LOG_MESSAGES_ANTI_FLICKER_MATCH_MEDIA_LISTENER_SETUP_FAILED, error);
   }
 })();

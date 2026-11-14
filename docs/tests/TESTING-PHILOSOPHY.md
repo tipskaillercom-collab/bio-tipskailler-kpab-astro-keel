@@ -4,13 +4,14 @@ Tài liệu này giải thích bản chất kiến trúc đằng sau 3 tầng ki
 
 ---
 
-## 1. Phân loại bản chất 3 tầng kiểm thử
+## 1. Phân loại bản chất 4 tầng kiểm thử
 
-Mọi bộ kiểm thử cho các tính năng Frontend trong dự án đều được thiết kế theo 3 cấp độ từ cơ bản đến khắc nghiệt:
+Mọi bộ kiểm thử cho các tính năng Frontend trong dự án đều được thiết kế theo 4 cấp độ từ cơ bản đến khắc nghiệt:
 
 - **Tầng 1 — Kiểm thử Chức năng (Functional Testing - `000-*`):** Đảm bảo các luồng UI/UX cốt lõi hoạt động đúng như đặc tả thiết kế (ví dụ: thứ tự ưu tiên dữ liệu, đồng bộ cài đặt hệ điều hành, tương thích vòng đời chuyển trang của Astro).
 - **Tầng 2 — Kiểm thử Chịu tải & Thao tác Biên (Edge-Case & Resilience Testing - `001-*`):** Xử lý các tình huống người dùng thao tác nhanh, lệch mục tiêu (click liên tục nhiều lần/giây, bấm nhầm vào thẻ con bên trong nút) hoặc trạng thái DOM bị sai lệch.
 - **Tầng 3 — Lập trình Phòng thủ (Defensive Programming - `002-*`):** Các thuật ngữ như _"Tràn bộ nhớ"_, _"Giả mạo dữ liệu"_, hay _"DOM Clobbering"_ thực chất là tên gọi chuyên ngành cho các lỗi môi trường rất hay gặp trên trình duyệt của người dùng thật.
+- **Tầng 4 — Trợ năng & Ngữ nghĩa HTML (Accessibility & Semantic HTML - `900-*`):** Đảm bảo giao diện tuân thủ chuẩn mực Web quốc tế (WCAG), giúp mọi đối tượng người dùng (bao gồm người sử dụng trình đọc màn hình hoặc điều hướng bằng bàn phím) đều có thể tương tác dễ dàng và tránh các xung đột hành vi mặc định của trình duyệt.
 
 ---
 
