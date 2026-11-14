@@ -22,3 +22,12 @@ Mọi bộ kiểm thử cho các tính năng Frontend trong dự án đều đư
 2. **Ngăn chặn xung đột với Extension và Script bên thứ ba:** Người dùng thường cài nhiều tiện ích mở rộng (dịch thuật, chặn quảng cáo, đổi màu nền...). Các tiện ích này dễ tự ý chèn thẻ HTML lạ (`DOM Clobbering`) hoặc ghi đè dữ liệu rác vào `localStorage` (`Storage Tampering`). Bộ test giúp mã nguồn miễn nhiễm và không phát sinh lỗi vặt do môi trường bên ngoài gây ra.
 3. **Chống lỗi hồi quy (Regression Prevention) khi bảo trì:** Khi nâng cấp framework (như Astro) hoặc tái cấu trúc giao diện, chỉ cần chạy một lệnh `npm test`. Toàn bộ các kịch bản phức tạp sẽ tự động kiểm tra trong vài giây để cảnh báo ngay nếu có tính năng cũ bị ảnh hưởng.
 4. **Tài liệu sống (Living Documentation) chuẩn mực:** Các file kiểm thử đóng vai trò như bản hướng dẫn kỹ thuật chi tiết và chính xác nhất. Bất kỳ lập trình viên nào đọc vào bộ test cũng nắm bắt được ngay hệ thống đã được thiết kế để chống chịu những tình huống nào.
+
+---
+
+## 3. Triết Lý Tài Liệu Hóa & Comment Tiếng Việt Chi Tiết
+
+- **Định vị & Mục đích rõ ràng:** Mọi file trong hệ thống kiểm thử đều phải có khối Header Comment (`File:` và `Mô tả:`) ở ngay dòng đầu tiên. Việc này giúp giảm thời gian onboard lập trình viên mới và định hình rõ trách nhiệm độc lập của từng file.
+
+- **Test Code là Tài Liệu Sống (Living Documentation):** Test suite không chỉ để bắt lỗi mà còn là tài liệu hướng dẫn cách ứng dụng hoạt động. Do đó, việc comment tiếng Việt chi tiết trong từng file test giúp lập trình viên và AI Agent hiểu rõ **nghiệp vụ (Business Logic)** phía sau mã nguồn.
+- **Tiêu chuẩn cho AI Agent khi sinh mã test:** Khi sinh hoặc cập nhật file test, AI Agent phải coi việc bổ sung comment tiếng Việt chi tiết cho Header, Arrange/Act/Assert là điều kiện tiên quyết (Non-negotiable).

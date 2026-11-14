@@ -73,3 +73,109 @@ Tài liệu này định nghĩa các quy chuẩn **bắt buộc** khi AI Agent v
   - **Cô lập các file `.test.ts`:** Tuyệt đối không đặt hàm dùng chung trong file `.test.ts` và không import chéo giữa các file `.test.ts` với nhau. Điều này ngăn chặn lỗi vòng lặp phụ thuộc (Circular Dependency) và lỗi chạy trùng lặp test suite (Double Execution) khi Vitest quét tự động.
   - **Các file test logic phân rã:** Đặt theo tiền tố số thứ tự theo từng nhóm kịch bản (ví dụ: `000-architectural-spec.test.ts`, `001-stress-edge-cases.test.ts`, `002-security-hardening.test.ts`). Vitest sẽ tự động quét và thực thi toàn bộ các file này mà không cần file entrypoint trung gian.
   - **File test tích hợp chính (`<feature-name>.test.ts`):** Ví dụ `tests/theme-toggle-feature/theme-toggle.test.ts` — chỉ sử dụng khi cần kiểm thử luồng tích hợp đầu-cuối (End-to-End Integration) kết hợp nhiều module cùng lúc, tuyệt đối không dùng chỉ để gom lệnh `import` các file test con.
+
+---
+
+## 6. Quy Định Comment Chi Tiết Bằng Tiếng Việt (Bắt Buộc Cho AI Agent & Dev)
+
+Tất cả các file nằm trong thư mục `tests/` (bao gồm cả file test `*.test.ts`, `*.spec.ts` và file helper `*.helpers.ts`) **BẮT BUỘC** phải tuân thủ nghiêm ngặt chuẩn tài liệu hóa bằng **Tiếng Việt**:
+
+1. **Header Comment ở dòng đầu tiên:** Khai báo rõ đường dẫn file và mô tả vai trò/phạm vi kiểm thử.
+2. **Comment giải thích Hằng số & Biến:** Nêu rõ mục đích sử dụng của từng hằng số cấu hình (`TEST_CONFIG`), biến môi trường giả lập (mock variables), hoặc descriptor gốc.
+3. **Comment cho các hàm Helper:** Giải thích rõ hàm làm gì, tham số nhận vào, cơ chế xử lý bất đồng bộ (như `yieldToEventLoop`) và lý do tạo hàm.
+4. **Comment cấu trúc Test Suite (Describe / BeforeEach / AAA):** Giải thích mục đích thiết lập môi trường sạch trước mỗi test case và từng giai đoạn Arrange - Act - Assert.
+
+---
+
+### Mẫu 1: Chuẩn Comment Tiếng Việt Cho File Helpers (`*.helpers.ts`)
+
+```typescript
+/**
+ * File: tests/theme-toggle-feature/theme-toggle.helpers.ts
+ * Mô tả: Cung cấp các hàm bổ trợ (helpers), hằng số cấu hình và mock utilities
+ * phục vụ kiểm thử tính năng Theme Toggle và cơ chế chống giật trang (Anti-Flicker).
+ */
+
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { vi } from 'vitest';
+
+/**
+ * Hằng số cấu hình cố định phục vụ cho toàn bộ các test case về Theme.
+ * Sử dụng `as const` để đóng băng kiểu dữ liệu ở mức compile-time.
+ */
+export const TEST_CONFIG = {
+  // Key lưu trữ trạng thái giao diện trong localStorage
+  STORAGE_KEY: 'theme',
+  // Thuộc tính HTML data attribute dùng để định dạng theme trên DOM
+  DATA_ATTRIBUTE: 'theme',
+  // CSS Selector của nút bấm kích hoạt chuyển đổi giao diện
+  TOGGLE_SELECTOR: '[data-theme-toggle]',
+} as const;
+
+/**
+ * Đọc đồng bộ nội dung mã nguồn của script chống giật trang (Anti-Flicker) từ thư mục public.
+ * Đảm bảo script tĩnh được nạp chính xác vào môi trường kiểm thử DOM giả lập.
+ */
+export const antiFlickerCode = readFileSync(
+  resolve(process.cwd(), 'public/scripts/theme-init-anti-flicker.js'),
+  'utf-8',
+);
+
+/**
+ * Hàm hỗ trợ nhường quyền xử lý cho Event Loop (Microtask / Macrotask queue).
+ * Tác dụng: Trờ cho các tác vụ bất đồng bộ hoặc thao tác cập nhật DOM hoàn tất trước khi assert.
+ */
+export async function yieldToEventLoop(): Promise<void> {
+  // Trả về một Promise giải quyết sau 0ms để đẩy luồng thực thi xuống cuối Event Loop queue
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+/**
+ * Thực thi trực tiếp đoạn script Anti-Flicker trong môi trường window/document giả lập.
+ */
+export function runAntiFlickerScript(): void {
+  // ... thực thi logic script trong môi trường DOM giả lập ...
+}
+```
+
+---
+
+### Mẫu 2: Chuẩn Comment Tiếng Việt Cho File Test Thật Sự (`*.test.ts`)
+
+```typescript
+/**
+ * File: tests/theme-toggle-feature/000-architectural-spec.test.ts
+ * Mô tả: Bộ kiểm thử kiến trúc (Architectural Specification) cho tính năng chuyển đổi giao diện.
+ * Kiểm tra việc khởi tạo ban đầu, đồng bộ trạng thái storage và các hành vi mặc định của môi trường.
+ */
+
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import {
+  createMatchMediaMock,
+  runAntiFlickerScript,
+  TEST_CONFIG,
+  yieldToEventLoop,
+} from './theme-toggle.helpers';
+
+describe('000: Architectural Specification Tests', () => {
+  // Biến lưu trữ mock cho đối tượng window.matchMedia trong các test case
+  let matchMediaMock: ReturnType<typeof createMatchMediaMock>;
+
+  // Lưu lại PropertyDescriptor gốc của window.localStorage để khôi phục sau mỗi test case
+  const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+
+  // Khối thiết lập môi trường sạch chạy trước mỗi test case (Setup Hook)
+  beforeEach(() => {
+    // 1. Khôi phục lại đối tượng localStorage gốc nếu descriptor bị ghi đè ở test trước
+    if (originalLocalStorageDescriptor) {
+      Object.defineProperty(window, 'localStorage', originalLocalStorageDescriptor);
+    }
+
+    // 2. Xóa toàn bộ dữ liệu lưu trữ tạm thời trong localStorage để đảm bảo tính cô lập
+    localStorage.clear();
+  });
+
+  // ... các test case tiếp theo được viết theo chuẩn AAA với comment tiếng Việt chi tiết ...
+});
+```

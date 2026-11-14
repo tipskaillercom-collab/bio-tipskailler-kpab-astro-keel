@@ -27,3 +27,25 @@ Tài liệu này định nghĩa các quy tắc **bắt buộc** mà AI Agent ph�
 
 - **Componentization:** Tách nhỏ giao diện thành các Astro Component độc lập, dễ quản lý và tái sử dụng (áp dụng cho cả code chính lẫn code test giao diện). Trong file test, không tự viết chuỗi HTML giả lập (hardcode HTML) mà phải import và sử dụng chính component đó để đảm bảo tính đồng nhất.
 - **Chú thích tiếng Việt:** Mọi hàm, component, và các bước logic chính **BẮT BUỘC** phải có chú thích (comment) giải thích chi tiết bằng **tiếng Việt** rõ ràng, dễ hiểu.
+
+---
+
+## 4. Tiêu Chuẩn Header Comment (Comment Đầu File)
+
+Tất cả các file mã nguồn (`.ts`, `.js`, `.css`, `.html`, v.v.) bắt buộc phải khai báo khối comment ngay tại dòng đầu tiên của file để làm rõ cấu trúc và mục đích sử dụng.
+
+```javascript
+/**
+ * File: public/scripts/theme-init-anti-flicker.js
+ * Mô tả: Script tĩnh thực thi đồng bộ trước khi trình duyệt render giao diện (Anti-Flicker).
+ */
+```
+
+---
+
+## 5. Tiêu Chuẩn Viết Code Cơ Bản
+
+- **Comment chi tiết bằng Tiếng Việt (Bắt buộc đối với AI Agent & Lập trình viên):**
+  - Mọi hàm, class, interface, biến phức tạp và từng bước xử lý logic **BẮT BUỘC** phải có comment giải thích chi tiết bằng **Tiếng Việt**.
+  - Không viết comment qua loa, chung chung. Comment phải nêu rõ: **Mục đích**, **Đầu vào/Đầu ra**, và **Lý do xử lý logic** đó.
+- **Type/Interface tường minh:** Luôn khai báo kiểu dữ liệu tường minh (strict typing) cho tất cả các biến...
