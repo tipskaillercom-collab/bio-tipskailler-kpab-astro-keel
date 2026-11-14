@@ -76,7 +76,28 @@ Tài liệu này định nghĩa các quy chuẩn **bắt buộc** khi AI Agent v
 
 ---
 
-## 6. Quy Định Comment Chi Tiết Bằng Tiếng Việt (Bắt Buộc Cho AI Agent & Dev)
+## 6. Quy chuẩn Môi trường & Parse HTML với AstroContainer (SSR Component Testing)
+
+- **Mục đích:** Ngăn chặn xung đột môi trường toàn cục giữa SSR runtime của Astro và giả lập trình duyệt, đồng thời tránh lỗi thiếu ngữ cảnh `HTMLDocument` khi phân tích chuỗi HTML từ `AstroContainer`.
+- **Chỉ thị bắt buộc:**
+  - **Cố định môi trường Node cho file test Astro Component:** Mọi file test gọi `experimental_AstroContainer` **BẮT BUỘC** phải khai báo `// @vitest-environment node` ở ngay dòng đầu tiên của file. Tuyệt đối không chạy `AstroContainer` trong môi trường `happy-dom` hoặc `jsdom` toàn cục.
+  - **Không khởi tạo độc lập `new DOMParser()`:** Khi cần chuyển đổi chuỗi HTML từ `container.renderToString(...)` sang cây DOM để truy vấn selector, **TUYỆT ĐỐI KHÔNG** gọi trực tiếp `DOMParser` toàn cục hay `new DOMParser()` import rời rạc (gây lỗi `Cannot read properties of undefined (reading 'HTMLDocument')`).
+  - **BẮT BUỘC** khởi tạo `DOMParser` thông qua một thực thể `Window` của `happy-dom`:
+    ```typescript
+    // @vitest-environment node
+    import { experimental_AstroContainer as AstroContainer } from 'astro/container';
+    import { Window } from 'happy-dom';
+
+    // ✅ ĐÚNG: Gắn ngữ cảnh Window trước khi gọi DOMParser
+    const parseHTML = (html: string) => {
+      const window = new Window();
+      return new window.DOMParser().parseFromString(html, 'text/html');
+    };
+    ```
+
+---
+
+## 7. Quy Định Comment Chi Tiết Bằng Tiếng Việt (Bắt Buộc Cho AI Agent & Dev)
 
 Tất cả các file nằm trong thư mục `tests/` (bao gồm cả file test `*.test.ts`, `*.spec.ts` và file helper `*.helpers.ts`) **BẮT BUỘC** phải tuân thủ nghiêm ngặt chuẩn tài liệu hóa bằng **Tiếng Việt**:
 

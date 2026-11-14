@@ -1,5 +1,24 @@
 (() => {
   // ==========================================
+  // STORAGE WRAPPERS (Hạ cấp an toàn khi bị chặn)
+  // ==========================================
+  const safeGetLocale = () => {
+    try {
+      return localStorage.getItem('locale');
+    } catch {
+      return null;
+    }
+  };
+
+  const safeSetLocale = (locale) => {
+    try {
+      localStorage.setItem('locale', locale);
+    } catch {
+      // Bỏ qua khi trình duyệt chặn quyền ghi localStorage (SecurityError / QuotaExceededError)
+    }
+  };
+
+  // ==========================================
   // STEP FUNCTIONS (Các bước xử lý độc lập)
   // ==========================================
 
@@ -25,7 +44,8 @@
     }
 
     // Đồng bộ lại bộ nhớ hệ thống về ngôn ngữ mặc định này
-    localStorage.setItem('locale', defaultLocale);
+    safeSetLocale(defaultLocale);
+    // localStorage.setItem('locale', defaultLocale);
 
     // Bóc tách chữ tiền tố thừa đó ra (Ví dụ: bỏ "ja" ra khỏi ["ja", "about"] thành ["about"])
     const cleanSegments = helpers.cleanSegments(pathSegments, true);
@@ -68,7 +88,8 @@
     }
 
     // Cập nhật bộ nhớ hệ thống theo ngôn ngữ đích mới
-    localStorage.setItem('locale', preferredLocale);
+    safeSetLocale(preferredLocale);
+    // localStorage.setItem('locale', preferredLocale);
 
     // Tiến hành làm sạch mảng phân đoạn URL cũ
     const cleanSegments = helpers.cleanSegments(pathSegments, hasLocalePrefix);
@@ -84,7 +105,8 @@
   // Bước 5: Đồng bộ hóa trạng thái ngôn ngữ vào LocalStorage và thuộc tính DOM
   const syncLocaleState = (currentLocale) => {
     // Nếu URL đã trùng khớp hoàn hảo với ngôn ngữ đích, đồng bộ giá trị chuẩn vào bộ nhớ lưu trữ
-    localStorage.setItem('locale', currentLocale);
+    safeSetLocale(currentLocale);
+    // localStorage.setItem('locale', currentLocale);
     // Đính thuộc tính dữ liệu data-locale vào thẻ <html> để CSS/JS khác nhận diện điều khiển UI giao diện
     document.documentElement.dataset.locale = currentLocale;
   };
@@ -101,7 +123,8 @@
 
     // Thực hiện phân rã các thông số URL hiện tại
     const pathSegments = helpers.getSegments();
-    const savedLocale = localStorage.getItem('locale');
+    const savedLocale = safeGetLocale();
+    // const savedLocale = localStorage.getItem('locale');
 
     // Kiểm tra xem phân đoạn đầu tiên của URL có phải là mã ngôn ngữ hợp lệ hay không
     const hasLocalePrefix = helpers.isValidLocale(pathSegments[0], locales);
