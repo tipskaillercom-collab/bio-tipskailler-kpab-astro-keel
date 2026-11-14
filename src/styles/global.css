@@ -209,6 +209,22 @@ a:not(.brand, .button):hover {
   border-bottom: var(--hairline);
 }
 
+/* Khối chứa 2 nút action Theme và Locale */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Cập nhật Responsive CSS cho màn hình di động */
+@media (max-width: 760px) {
+  .header-actions {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+  }
+}
+
 .brand {
   display: inline-flex;
   align-items: center;
@@ -1116,4 +1132,49 @@ pre code {
   h3 {
     max-width: 100%;
   }
+}
+
+/* =============================================================== */
+/* ================= Extends - CSS Locale Switcher =============== */
+/* =============================================================== */
+
+.lang-toggle {
+  display: grid;
+  width: 2.35rem;
+  height: 2.35rem;
+  place-items: center;
+  border: var(--hairline);
+  border-radius: 50%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: border-color 180ms ease;
+}
+
+.lang-toggle:hover {
+  border-color: var(--color-accent);
+}
+
+.lang-toggle svg {
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  border: 1px solid var(--color-line-strong);
+  overflow: hidden;
+}
+
+/* Mặc định làm mờ tất cả các lá cờ */
+.lang-toggle .flag-part {
+  opacity: 0.28;
+  transition: opacity 200ms ease;
+}
+
+/*
+ * Kích hoạt làm sáng lá cờ tương ứng với ngôn ngữ hiện tại của trang.
+ * Tự động hỗ trợ mọi ngôn ngữ (ví dụ: html[data-locale='en'] .flag-en)
+ */
+:root[data-locale='en'] .lang-toggle .flag-en,
+:root[data-locale='ja'] .lang-toggle .flag-ja,
+:root[data-locale='vi'] .lang-toggle .flag-vi {
+  opacity: 1;
 }

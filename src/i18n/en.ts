@@ -17,6 +17,15 @@
 // is what lets other locales satisfy `UIStrings`.
 
 export const en = {
+  /** SVG markup lá cờ hiển thị trên nút đổi ngôn ngữ */
+  flagSvg: `
+    <rect width="24" height="24" fill="#012169" />
+    <path d="M0,0 L24,24 M24,0 L0,24" stroke="#fff" stroke-width="3.5" />
+    <path d="M0,0 L24,24 M24,0 L0,24" stroke="#C8102E" stroke-width="1.8" />
+    <path d="M12,0 V24 M0,12 H24" stroke="#fff" stroke-width="5.5" />
+    <path d="M12,0 V24 M0,12 H24" stroke="#C8102E" stroke-width="3.2" />
+  `,
+
   // Header, footer, and other chrome
   'nav.home': 'Home',
   'nav.about': 'About',

@@ -6,6 +6,11 @@
 import type { UIStrings } from './en';
 
 export const ja: UIStrings = {
+  flagSvg: `
+    <rect width="24" height="24" fill="#ffffff" />
+    <circle cx="12" cy="18.5" r="3.6" fill="#BC002D" />
+  `,
+
   // Header, footer, and other chrome
   'nav.home': 'ホーム',
   'nav.about': 'プロフィール',

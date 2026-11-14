@@ -17,6 +17,7 @@ import CodeCopy from '../components/CodeCopy.astro';
 import SocialLinks from '../components/SocialLinks.astro';
 import { getLocaleHelpersScript } from '../scripts/locale-switch/init-locale-switch';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import LocaleToggle from '../components/LocaleToggle.astro';
 
 // Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
 const localeHelpersInlineScript = getLocaleHelpersScript('__clientLocaleSwitchHelper');
@@ -99,19 +100,17 @@ const isActive = (href: string) => {
         <span>{siteName}</span>
       </a>
       <nav class="site-nav" aria-label={t('nav.label')}>
-        {
-          NAV_ITEMS.map((item) => (
-            <a href={withBase(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
-              {navLabel(item)}
-            </a>
-          ))
-        }
+        {NAV_ITEMS.map((item) => (
+          <a href={withBase(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
+            {navLabel(item)}
+          </a>
+        ))}
       </nav>
-      <ThemeToggle label={t('theme.toggle')} />
-
-      <button class="locale-toggle" type="button" aria-label="dfsadfdsdafasdf" data-locale-toggle>
-        <span aria-hidden="true">sssssssssssssss</span>
-      </button>
+      <!-- Gom nhóm các nút chức năng ở header -->
+      <div class="header-actions">
+        <ThemeToggle label={t('theme.toggle')} />
+        <LocaleToggle label="Switch language" />
+      </div>
     </header>
 
     <main>
@@ -122,7 +121,9 @@ const isActive = (href: string) => {
       <p>{SITE.footerText}</p>
       <div class="footer-links">
         <a href={withBase('/blog/')}>{t('footer.notes')}</a>
-        <a href="https://almanac.p4ni.com" target="_blank" rel="noopener noreferrer">Almanac ↗</a>
+        <a href="https://almanac.p4ni.com" target="_blank" rel="noopener noreferrer">
+          Almanac ↗
+        </a>
       </div>
       <SocialLinks locale={locale} />
     </footer>

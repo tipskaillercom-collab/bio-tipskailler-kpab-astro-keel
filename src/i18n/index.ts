@@ -89,3 +89,14 @@ export const useTranslations = (locale: Locale = SITE.locale) => {
 
   return { t, formatDate, navLabel, readingTime, locale };
 };
+
+/**
+ * Bản đồ chứa SVG markup của lá cờ tương ứng với từng ngôn ngữ được nạp từ các file từ điển
+ */
+export const flagMarkupMap: Record<Locale, string> = locales.reduce(
+  (acc, loc) => {
+    acc[loc] = DICTIONARIES[loc].flagSvg;
+    return acc;
+  },
+  {} as Record<Locale, string>,
+);
