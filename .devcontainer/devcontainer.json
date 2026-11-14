@@ -18,8 +18,8 @@
         "gruntfuggly.todo-tree", // Nhắc nhở việc làm
         "tctinh.universal-agent-quota-tracker", // Thống kê số lượng token còn lại của AI
         "thewalking-dev.ai-insights", // Thống kê số lượng token còn lại của AI
-        "redhat.vscode-yaml", // Dành cho Yaml
-        "ms-playwright.playwright" // Tự động hóa kiểm thử (E2E Test)
+        "redhat.vscode-yaml" // Dành cho Yaml
+        // "ms-playwright.playwright" // Tự động hóa kiểm thử (E2E Test)
       ],
       "settings": {}
     }

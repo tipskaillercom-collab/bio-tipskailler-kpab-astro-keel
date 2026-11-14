@@ -21,11 +21,17 @@ Tài liệu này định nghĩa các quy chuẩn **bắt buộc** khi AI Agent v
 
 ---
 
-## 2. Quy chuẩn Mô phỏng Sự kiện (Event Delegation & Bubbling)
+## 2. Quy chuẩn Khởi tạo DOM & Mô phỏng Sự kiện (Event Delegation & Bubbling)
 
-- **Mục đích:** Tránh đứt gãy chuỗi nổi bọt sự kiện khi test trên `document` kết hợp với `innerHTML` thô trong Happy-DOM.
+- **Mục đích:** Đảm bảo cấu trúc DOM giả lập khớp 100% với giao diện thực tế và không làm đứt gãy chuỗi nổi bọt sự kiện (event bubbling) khi test trên `document` trong môi trường Happy-DOM.
 - **Chỉ thị bắt buộc:**
-  - Khi khởi tạo `MouseEvent` hoặc bất kỳ sự kiện tương tác DOM nào, **LUÔN LUÔN** bổ sung tường minh hai cờ `composed: true` và `bubbles: true`:
+  - **Đồng bộ cấu trúc DOM:** Khi cần nạp giao diện vào `document.body.innerHTML`, **BẮT BUỘC** phải import và render từ chính Astro Component thực tế (thông qua `AstroContainer`). **TUYỆT ĐỐI KHÔNG** gán chuỗi HTML tự viết tay (hardcoded raw HTML) để tránh sai lệch selector hoặc thiếu thẻ bao bọc khiến sự kiện không thể nổi bọt.
+    ```typescript
+    // ✅ ĐÚNG: Render chuỗi HTML từ component thật
+    const container = await AstroContainer.create();
+    document.body.innerHTML = await container.renderToString(TargetComponent);
+    ```
+  - **Kích hoạt sự kiện nổi bọt:** Khi khởi tạo `MouseEvent` hoặc bất kỳ sự kiện tương tác DOM nào, **LUÔN LUÔN** bổ sung tường minh hai cờ `composed: true` và `bubbles: true`:
     ```typescript
     const clickEvent = new MouseEvent('click', {
       bubbles: true,
@@ -60,8 +66,10 @@ Tài liệu này định nghĩa các quy chuẩn **bắt buộc** khi AI Agent v
 
 ---
 
-## 5. Quy chuẩn Đặt tên File Test
+## 5. Quy chuẩn Đặt tên & Tổ chức File Test (DRY Test Architecture)
 
 - **Chỉ thị bắt buộc:**
-  - Các file test logic phụ trợ / đặc tả kiến trúc: Đặt theo tiền tố số thứ tự (ví dụ: `000-architectural-spec.test.ts`, `001-stress-edge-cases.test.ts`).
-  - **File test chính (Main Feature Test):** Bắt buộc phải đặt tên theo định dạng gốc của tính năng, ví dụ: `theme-toggle.test.ts` nằm trong thư mục `tests/theme-toggle-feature/`.
+  - **Tách biệt Test Helpers (Chống lặp code):** Các hằng số cấu hình (`TEST_CONFIG`), hàm giả lập (`createMatchMediaMock`), hàm thực thi script (`runAntiFlickerScript`) và hàm nhường luồng (`yieldToEventLoop`) xuất hiện từ 2 file test trở lên **BẮT BUỘC** phải tách ra thành file helper riêng biệt có hậu tố `.helpers.ts` (ví dụ: `tests/theme-toggle-feature/theme-toggle.helpers.ts`).
+  - **Cô lập các file `.test.ts`:** Tuyệt đối không đặt hàm dùng chung trong file `.test.ts` và không import chéo giữa các file `.test.ts` với nhau. Điều này ngăn chặn lỗi vòng lặp phụ thuộc (Circular Dependency) và lỗi chạy trùng lặp test suite (Double Execution) khi Vitest quét tự động.
+  - **Các file test logic phân rã:** Đặt theo tiền tố số thứ tự theo từng nhóm kịch bản (ví dụ: `000-architectural-spec.test.ts`, `001-stress-edge-cases.test.ts`, `002-security-hardening.test.ts`). Vitest sẽ tự động quét và thực thi toàn bộ các file này mà không cần file entrypoint trung gian.
+  - **File test tích hợp chính (`<feature-name>.test.ts`):** Ví dụ `tests/theme-toggle-feature/theme-toggle.test.ts` — chỉ sử dụng khi cần kiểm thử luồng tích hợp đầu-cuối (End-to-End Integration) kết hợp nhiều module cùng lúc, tuyệt đối không dùng chỉ để gom lệnh `import` các file test con.

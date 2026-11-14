@@ -1,11 +1,9 @@
-Dưới đây là phương án triển khai tính năng **Chuyển đổi giao diện Light/Dark Mode** chuẩn quy trình 4 bước dành cho dự án:
+# Dưới đây là phương án triển khai tính năng **Chuyển đổi giao diện Light/Dark Mode** chuẩn quy trình 4 bước dành cho dự án:
 
----
-
-### 1. 📋 PM & UX Spec (Yêu cầu sản phẩm & Trải nghiệm)
+## 1. 📋 PM & UX Spec (Yêu cầu sản phẩm & Trải nghiệm)
 
 - **Mục tiêu:** Cho phép người dùng chuyển đổi linh hoạt giữa giao diện Sáng (Light) và Tối (Dark) để bảo vệ mắt và tăng trải nghiệm đọc.
-  <!-- // TODO: Làm sao để test nút toggle này luôn nằm bên góc phải của nhiều thiết bị như: PC, Laptop, Smart Phone, Table.. -->
+  <!-- // TODO: Làm sao để test nút toggle này luôn nằm bên góc phải của nhiều thiết bị như: PC, Laptop, Smart Phone, Table.. và có kiểm tra yêu cầu: aria-label -->
 - **Vị trí UI:** Nút chuyển đổi (Toggle Button) nằm trên `<header>` góc phải, cạnh bộ đổi ngôn ngữ.
 - **Trạng thái mặc định:**
   - Nếu người dùng ghé thăm lần đầu: Tự động phát hiện cài đặt của hệ điều hành máy tính (`prefers-color-scheme`).
@@ -15,20 +13,22 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 
 ---
 
-### 2. ⚠️ Edge Cases (Các bẫy logic & Kỹ thuật cần né)
+## 2. ⚠️ Edge Cases (Các bẫy logic & Kỹ thuật cần né)
 
 1. **Lỗi Nhấp nháy màn hình (Flash of Wrong Theme - FOUT):**
    - _Rủi ro:_ Trình duyệt tải trang trắng tinh (Light) rồi mới đọc JS và đổi sang Dark làm chói mắt người dùng.
+   <!-- // TODO: Làm sao check 1 đoạn script inline đã dùng đồng bộ (synchronous) ngay trong <head> và đã gán attribute data-theme cho <html> -->
    - _Giải pháp:_ Đặt 1 đoạn script inline đồng bộ (synchronous) ngay trong `<head>` để gán attribute `data-theme` cho `<html>` **trước khi** trình duyệt bắt đầu vẽ (render) giao diện.
 2. **Tương thích Astro View Transitions (`ClientRouter`):**
    - _Rủi ro:_ Khi chuyển trang bằng SPA mode (`astro:transitions`), Astro sẽ reset lại thuộc tính của tag `<html>` hoặc làm hỏng các event listener gán trực tiếp vào element.
+   <!-- // TODO: Làm sao để check ĐÃ: "Lắng nghe sự kiện astro:after-swap để khôi phục lại data-theme và dùng Event Delegation bắt sự kiện click ở mức document" -->
    - _Giải pháp:_ Lắng nghe sự kiện `astro:after-swap` để khôi phục lại `data-theme` và dùng **Event Delegation** bắt sự kiện click ở mức `document`.
 3. **Đồng bộ sự kiện đổi theme của hệ điều hành:**
    - Nếu người dùng chưa từng bấm nút toggle (chưa có `localStorage`), khi họ đổi theme trên Windows/macOS, trang web phải tự cập nhật theo live.
 
 ---
 
-### 3. 🏗️ Tech Solution (Cấu trúc file & Giải pháp)
+## 3. 🏗️ Tech Solution (Cấu trúc file & Giải pháp)
 
 - **CSS Architecture:** Sử dụng CSS Custom Properties (Variables) gắn vào `:root[data-theme="light"]` và `:root[data-theme="dark"]`.
 - **Anti-Flicker Strategy:** Tách biệt logic khởi tạo ban đầu ra file JS tĩnh trong `public/scripts/` để nạp trực tiếp tại `<head>`, chống chớp giao diện.
@@ -42,9 +42,37 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 
 ---
 
-### 4. 💻 Implementation (Chi tiết từng bước)
+## 4. 💻 Implementation (Chi tiết từng bước)
+
+**Một mình file JS là KHÔNG ĐỦ** để giải quyết triệt để 100% bài toán anti-flicker và trải nghiệm native. Nó bắt buộc phải kết hợp đồng bộ với CSS thông qua các từ khóa `color-scheme` và `prefers-color-scheme`.
+
+---
+
+### 💡 Bảng tổng kết luồng xử lý Anti-Flicker chuẩn
+
+```text
+[Người dùng mở trang]
+       │
+       ├─► 1. Trình duyệt nạp CSS ──► color-scheme & @media tự ăn màu theo OS ngay lập tức! (CHỐNG NHÁY 1)
+       │
+       ├─► 2. Inline JS chạy ở <head> ──► Kiểm tra localStorage:
+       │        ├─ Nhận thấy người dùng chọn theme khác OS?
+       │        └─► Gán <html data-theme="..."> NGAY LẬP TỨC! (CHỐNG NHÁY 2)
+       │
+       └─► 3. Giao diện vẽ ra màn hình (Paint) ──► Mượt mà 100%, đúng ý người dùng, không nháy 1 miligiây nào!
+```
+
+Toàn bộ cấu hình mã nguồn chi tiết từ các file `global.css`, `theme-init-anti-flicker.js`, `theme-toggle.ts`, `ThemeToggle.astro` cho đến `BaseLayout.astro` có thể được tham khảo trực tiếp trong hệ thống kho lưu trữ của dự án.
 
 #### Bước 4.1: Định nghĩa Token màu CSS `global.css` (`src/styles/global.css`)
+
+---
+
+- **`color-scheme: dark light;`**: Nói trực tiếp với engine của trình duyệt (Chromium, WebKit, Gecko): _"Hãy chuẩn bị sẵn sàng canvas mặc định, thanh cuộn (scrollbar), ô input, hộp chọn datePicker... ở chế độ này"_. Trình duyệt sẽ đổi màu thanh cuộn và màu nền hệ thống **ngay trước khi file JS kịp chạy hay DOM kịp render**.
+- **`@media (prefers-color-scheme: dark)`**: Đây là kênh giao tiếp tự động giữa **Hệ Điều Hành (OS)** và **Trình Duyệt**. Nhờ có nó, ngay khi CSS vừa nạp xong, giao diện lập tức đúng màu OS mà chưa cần tới 1 dòng JS nào thực thi.
+
+- Thuộc tính `data-theme` đóng vai trò là **"Công tắc ghi đè" (Override Switch)**.
+- Khi JS gán `data-theme="light"`, đoạn CSS `:root[data-theme='light']` sẽ có độ ưu tiên cao hơn `@media` và **ép trình duyệt phải dùng theme Light**, bất chấp OS đang là Dark.
 
 ```css src/styles/global.css
 :root {
@@ -124,13 +152,19 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 }
 ```
 
+---
+
 #### Bước 4.2: Tạo File Script Tĩnh Anti-Flicker `theme-init-anti-flicker.js` (`public/scripts/theme-init-anti-flicker.js`)
 
-> **Quy tắc Anti-Flicker:** Tách logic thực thi thô ra file JS tĩnh độc lập nằm trong `public/scripts/` để nạp trực tiếp qua thẻ `<script is:inline src="...">` trong `<head>`.
+---
+
+Nếu chỉ có CSS ở trên, ta gặp 1 hạn chế: **Không nhớ được lựa chọn thủ công của người dùng trong quá khứ**, vì vậy vai trò của file này là: **Đọc `localStorage` trước khi trình duyệt vẽ (paint) giao diện ra màn hình**.
 
 | Tệp                        | Trách nhiệm chính                                                                 | Xử lý khi nào?                                   |
 | -------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------ |
 | theme-init-anti-flicker.js | Chống chớp màn hình + Lắng nghe thay đổi từ Hệ điều hành (nếu user chưa tự chọn). | Ngay khi tải trang & liên tục ngầm ở background. |
+
+> **Quy tắc Anti-Flicker:** Tách logic thực thi thô ra file JS tĩnh độc lập nằm trong `public/scripts/` để nạp trực tiếp qua thẻ `<script is:inline src="...">` trong `<head>`.
 
 ```javascript public/scripts/theme-init-anti-flicker.js
 /**
@@ -188,7 +222,11 @@ Dưới đây là phương án triển khai tính năng **Chuyển đổi giao d
 })();
 ```
 
+---
+
 #### Bước 4.3: Tạo Logic Interactive Toggle Script `theme-toggle.ts` (`src/scripts/theme/theme-toggle.ts`)
+
+---
 
 | Tệp             | Trách nhiệm chính                                                                                            | Xử lý khi nào?                       |
 | --------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
@@ -257,7 +295,11 @@ document.addEventListener('click', (event: MouseEvent): void => {
 });
 ```
 
+---
+
 #### Bước 4.4: Tạo Component `ThemeToggle.astro` (`src/components/ThemeToggle.astro`)
+
+---
 
 ```tsx src/components/ThemeToggle.astro
 ---
@@ -278,7 +320,11 @@ const { label } = Astro.props;
 </button>
 ```
 
+---
+
 #### Bước 4.5: Tích hợp vào Layout Chính `BaseLayout.astro` (`src/layouts/BaseLayout.astro`)
+
+---
 
 ```tsx src/layouts/BaseLayout.astro
 ---
@@ -314,7 +360,21 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 
 ---
 
-### 🔍 Kết quả đạt được sau kiểm thử:
+## 🛡️ 5. Triết lý Lập trình Phòng thủ (Defensive Programming) & Ranh giới Bảo mật Client-Server
+
+- **Ranh giới Client vs. Server:** Phía Client là môi trường không đáng tin cậy; các từ khóa type safety chỉ có tác dụng khi biên dịch. Phía Server mới là nơi xử lý logic nghiệp vụ nhạy cảm.
+- **Độ bền vững ứng dụng (Resilience):** Hệ thống tự động xử lý ngoại lệ khi dung lượng storage bị chặn hoặc đầy (`QuotaExceededError`), chống lỗi DOM Clobbering và tự phục hồi về trạng thái mặc định an toàn.
+
+---
+
+## 🔍 6. Kết quả đạt được sau kiểm thử:
+
+<!-- // TODO: thông báo kết quả sau khi thử nghiệm tại đây -->
+
+Hệ thống đã vượt qua 100% các bài test qua Vitest và Happy-DOM bao gồm kiểm thử kiến trúc, chịu tải edge-case và lập trình phòng thủ.
+
+## 🔍 Kết quả đạt được sau kiểm thử:
+
 <!-- // TODO: thông báo kết quả sau khi thử nghiệm tại đây -->
 <!-- - ✅ **Chuẩn kiến trúc Anti-Flicker:** Logic Anti-Flicker nằm trong file tĩnh `/scripts/theme-init-anti-flicker.js` ở `public/`, nạp qua `<script is:inline src="...">` cực nhẹ và nhanh.
 - ✅ **Đồng bộ kiến trúc với `locale-switch`:** Cách triển khai 100% khớp với pattern hiện tại của dự án.

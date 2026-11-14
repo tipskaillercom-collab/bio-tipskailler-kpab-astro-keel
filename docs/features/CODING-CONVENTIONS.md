@@ -10,7 +10,7 @@ Tài liệu này định nghĩa các quy tắc **bắt buộc** mà AI Agent ph�
 - **Strict Typing:** Các file được phép dùng type/interface (như `.ts` hoặc phần Frontmatter của `.astro`) phải tuân thủ nghiêm ngặt kiểu dữ liệu, không dùng kiểu `any` tùy tiện.
 - **Error Handling & Console Logging:**
   - Luôn bọc các thao tác rủi ro (localStorage, DOM manipulation bất đồng bộ, API calls) trong khối `try...catch`.
-  - **LUÔN DÙNG** các hàm `console` (`console.log`, `console.warn`, `console.error`) kèm theo tiền tố module cụ thể (ví dụ: `[Theme Toggle]`, `[Locale Switch]`) để xuất thông tin ra console, giúp việc debug sau này dễ dàng.
+  - **LUÔN DÙNG** các hàm `console` (`console.log`, `console.info`, `console.warn`, `console.error`) kèm theo tiền tố module cụ thể (ví dụ: `[Theme Toggle]`) để xuất thông tin ra console, giúp việc debug sau này dễ dàng.
 
 ---
 
@@ -18,12 +18,12 @@ Tài liệu này định nghĩa các quy tắc **bắt buộc** mà AI Agent ph�
 
 - **Ngưỡng 2 lần:** Bất kỳ đoạn code logic nào xuất hiện từ **2 lần trở lên**, AI Agent **BẮT BUỘC** phải trích xuất (extract) thành một hàm độc lập.
 - **Quy tắc phân rã thư mục Helpers:**
-  - Helper mang tính năng riêng biệt (ví dụ: chuyển đổi ngôn ngữ): Đặt vào thư mục riêng của tính năng đó trong helpers (`src/helpers/locale-switch/`).
-  - Helper dùng chung toàn cục hoặc phục vụ test: Đặt vào thư mục `src/helpers/` hoặc `tests/` tương ứng. Nếu cần tạo thư mục con mới, AI Agent phải tuân thủ cấu trúc hiện tại và đề xuất rõ ràng.
+  - **Helper cho tính năng ứng dụng (Production):** Đặt vào thư mục riêng của tính năng đó trong `src/helpers/` (ví dụ: `src/helpers/locale-switch/`), hoặc đặt trực tiếp tại `src/helpers/` nếu dùng chung toàn cục.
+  - **Helper phục vụ kiểm thử (Test Helpers):** Đặt ngay trong thư mục test của tính năng đó và **BẮT BUỘC** dùng hậu tố `.helpers.ts` (ví dụ: `tests/theme-toggle-feature/theme-toggle.helpers.ts`). _(Xem chi tiết quy tắc tổ chức file test tại `docs/tests/TESTING-CONVENTIONS.md`)_.
 
 ---
 
 ## 3. Quản lý Component & Giao diện
 
-- **Componentization:** Tách nhỏ giao diện thành các Astro Component độc lập, dễ quản lý và tái sử dụng (áp dụng cho cả code chính lẫn code test giao diện).
+- **Componentization:** Tách nhỏ giao diện thành các Astro Component độc lập, dễ quản lý và tái sử dụng (áp dụng cho cả code chính lẫn code test giao diện). Trong file test, không tự viết chuỗi HTML giả lập (hardcode HTML) mà phải import và sử dụng chính component đó để đảm bảo tính đồng nhất.
 - **Chú thích tiếng Việt:** Mọi hàm, component, và các bước logic chính **BẮT BUỘC** phải có chú thích (comment) giải thích chi tiết bằng **tiếng Việt** rõ ràng, dễ hiểu.
