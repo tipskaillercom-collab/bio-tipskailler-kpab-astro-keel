@@ -40,7 +40,7 @@ describe('002: Security Hardening & Threat Mitigation Tests', () => {
   });
 
   describe('1. Denial of Service Mitigation (Storage Quota Exceeded)', () => {
-    test('6.1. Storage Quota Exceeded: Bắt QuotaExceededError và sử dụng mượt RAM Fallback', async () => {
+    test('1.1. Storage Quota Exceeded: Bắt QuotaExceededError và sử dụng mượt RAM Fallback', async () => {
       // ARRANGE: Khởi tạo Anti-Flicker và nạp module theme toggle
       runAntiFlickerScript();
       await import('../../src/scripts/theme/theme-toggle');
@@ -80,7 +80,7 @@ describe('002: Security Hardening & Threat Mitigation Tests', () => {
   });
 
   describe('2. Storage Tampering & Malformed Data Mitigation', () => {
-    test('6.2. Tiêm nhiễm mã độc/script rác vào localStorage -> Anti-Flicker hạ cấp về giá trị hợp lệ', async () => {
+    test('2.1. Tiêm nhiễm mã độc/script rác vào localStorage -> Anti-Flicker hạ cấp về giá trị hợp lệ', async () => {
       // ARRANGE: Giả lập dữ liệu trong localStorage bị hacker/extension bên thứ 3 sửa thành script XSS độc hại
       localStorage.setItem(TEST_CONFIG.STORAGE_KEY, '<script>alert("xss")</script>');
 
@@ -94,7 +94,7 @@ describe('002: Security Hardening & Threat Mitigation Tests', () => {
   });
 
   describe('3. DOM Clobbering Isolation Test', () => {
-    test('6.3. Chèn phần tử có id="theme" đè biến toàn cục -> Dataset truy vấn không bị sập', async () => {
+    test('3.1. Chèn phần tử có id="theme" đè biến toàn cục -> Dataset truy vấn không bị sập', async () => {
       // ARRANGE: Tạo một thẻ <div> lạ có id trùng với tên thuộc tính "theme" nhằm tấn công DOM Clobbering
       const clobberedDiv = document.createElement('div');
       clobberedDiv.id = 'theme';

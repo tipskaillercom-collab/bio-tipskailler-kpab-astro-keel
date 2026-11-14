@@ -3,9 +3,11 @@
  * Mô tả: Cấu hình Vitest chạy kiểm thử DOM bằng Happy-DOM nhẹ và tối ưu cho Dev Container.
  */
 
-import { defineConfig } from 'vitest/config';
+// import { defineConfig } from 'vitest/config';
+import { getViteConfig } from 'astro/config';
 
-export default defineConfig({
+// export default defineConfig({
+export default getViteConfig({
   test: {
     // Sử dụng môi trường happy-dom để giả lập Browser APIs (localStorage, document, window)
     environment: 'happy-dom',

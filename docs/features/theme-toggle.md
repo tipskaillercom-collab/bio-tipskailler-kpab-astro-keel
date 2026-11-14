@@ -3,12 +3,10 @@
 ## 1. 📋 PM & UX Spec (Yêu cầu sản phẩm & Trải nghiệm)
 
 - **Mục tiêu:** Cho phép người dùng chuyển đổi linh hoạt giữa giao diện Sáng (Light) và Tối (Dark) để bảo vệ mắt và tăng trải nghiệm đọc.
-  <!-- // TODO: Làm sao để test nút toggle này luôn nằm bên góc phải của nhiều thiết bị như: PC, Laptop, Smart Phone, Table.. và có kiểm tra yêu cầu: aria-label -->
 - **Vị trí UI:** Nút chuyển đổi (Toggle Button) nằm trên `<header>` góc phải, cạnh bộ đổi ngôn ngữ.
 - **Trạng thái mặc định:**
   - Nếu người dùng ghé thăm lần đầu: Tự động phát hiện cài đặt của hệ điều hành máy tính (`prefers-color-scheme`).
   - Nếu đã chọn trước đó: Ưu tiên giá trị đã lưu trong máy.
-    <!-- // TODO: kiểm tra xem có đúng là button không? -->
 - **Accessibility (a11y):** Sử dụng thẻ `<button>` chuẩn, hỗ trợ điều hướng bằng phím Tab/Enter, có `aria-label="Chuyển đổi giao diện Sáng/Tối"`.
 
 ---
@@ -17,11 +15,9 @@
 
 1. **Lỗi Nhấp nháy màn hình (Flash of Wrong Theme - FOUT):**
    - _Rủi ro:_ Trình duyệt tải trang trắng tinh (Light) rồi mới đọc JS và đổi sang Dark làm chói mắt người dùng.
-   <!-- // TODO: Làm sao check 1 đoạn script inline đã dùng đồng bộ (synchronous) ngay trong <head> và đã gán attribute data-theme cho <html> -->
    - _Giải pháp:_ Đặt 1 đoạn script inline đồng bộ (synchronous) ngay trong `<head>` để gán attribute `data-theme` cho `<html>` **trước khi** trình duyệt bắt đầu vẽ (render) giao diện.
 2. **Tương thích Astro View Transitions (`ClientRouter`):**
    - _Rủi ro:_ Khi chuyển trang bằng SPA mode (`astro:transitions`), Astro sẽ reset lại thuộc tính của tag `<html>` hoặc làm hỏng các event listener gán trực tiếp vào element.
-   <!-- // TODO: Làm sao để check ĐÃ: "Lắng nghe sự kiện astro:after-swap để khôi phục lại data-theme và dùng Event Delegation bắt sự kiện click ở mức document" -->
    - _Giải pháp:_ Lắng nghe sự kiện `astro:after-swap` để khôi phục lại `data-theme` và dùng **Event Delegation** bắt sự kiện click ở mức `document`.
 3. **Đồng bộ sự kiện đổi theme của hệ điều hành:**
    - Nếu người dùng chưa từng bấm nút toggle (chưa có `localStorage`), khi họ đổi theme trên Windows/macOS, trang web phải tự cập nhật theo live.
@@ -369,13 +365,34 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 
 ## 🔍 6. Kết quả đạt được sau kiểm thử:
 
-<!-- // TODO: thông báo kết quả sau khi thử nghiệm tại đây -->
-
 Hệ thống đã vượt qua 100% các bài test qua Vitest và Happy-DOM bao gồm kiểm thử kiến trúc, chịu tải edge-case và lập trình phòng thủ.
 
-## 🔍 Kết quả đạt được sau kiểm thử:
+## 🔍 6. Kết quả đạt được sau kiểm thử:
 
-<!-- // TODO: thông báo kết quả sau khi thử nghiệm tại đây -->
-<!-- - ✅ **Chuẩn kiến trúc Anti-Flicker:** Logic Anti-Flicker nằm trong file tĩnh `/scripts/theme-init-anti-flicker.js` ở `public/`, nạp qua `<script is:inline src="...">` cực nhẹ và nhanh.
-- ✅ **Đồng bộ kiến trúc với `locale-switch`:** Cách triển khai 100% khớp với pattern hiện tại của dự án.
-- ✅ **Code sạch & chuẩn TypeScript:** Tách biệt 3 file rõ ràng, có đầy đủ Step Functions, Strict Types và Error Handling. -->
+Hệ thống đã vượt qua **100%** trên cả 4 bộ kiểm thử tự động sử dụng Vitest, Happy-DOM và AstroContainer, đáp ứng đầy đủ các tiêu chí về kiến
+trúc, trải nghiệm người dùng, độ bền vững (Resilience), trợ năng (a11y) và bảo mật phòng thủ.
+
+### 📋 Bảng tổng hợp đối chiếu kết quả kiểm thử (Test Matrix Verification):
+
+- ✅ **Kiến trúc & Khởi tạo (`000-architectural-spec.test.ts`):**
+  - ☑️ Đọc chính xác cấu hình OS preference (`dark`/`light`) khi `localStorage` trống.
+  - ☑️ Ưu tiên dữ liệu cài đặt người dùng lưu trong `localStorage` đè lên OS preference.
+  - ☑️ Đồng bộ tự động theo thời gian thực (Live OS Scheme Syncing) khi hệ điều hành thay đổi giao diện (khi chưa khóa lựa chọn cá nhân).
+  - ☑️ Khôi phục chính xác trạng thái `data-theme` và duy trì bộ lắng nghe sự kiện khi Astro chuyển trang SPA (`astro:after-swap`).
+
+- ✅ **Chịu tải & Thao tác biên (`001-stress-edge-cases.test.ts`):**
+  - ☑️ Bắt sự kiện chuyển đổi thành công qua Event Delegation khi click vào thẻ con `<span>` bên trong button.
+  - ☑️ Bỏ qua các sự kiện click bên ngoài khu vực nút toggle.
+  - ☑️ Chống nghẽn/đua lệnh (Race Conditions) khi người dùng nhấp chuột nhanh liên tục (Rapid Clicks 10 lần/giây).
+  - ☑️ Tự phục hồi an toàn (Auto-recovery Guard) về theme mặc định khi thuộc tính `dataset.theme` bị giả mạo dữ liệu rác (`Corrupted Dataset Attack`).
+
+- ✅ **Lập trình phòng thủ & Hạ cấp an toàn (`002-security-hardening.test.ts`):**
+  - ☑️ Xử lý mượt mà ngoại lệ tràn bộ nhớ trình duyệt (`QuotaExceededError`), tự động hạ cấp an toàn sang bộ nhớ tạm RAM (`RAM Fallback`).
+  - ☑️ Bắt ngoại lệ truy cập bộ nhớ bị chặn (`SecurityError` ở chế độ Ẩn danh/Brave) mà không làm sập ứng dụng.
+  - ☑️ Chống tấn công `DOM Clobbering` (thẻ HTML lạ chèn đè biến toàn cục `window.localStorage`).
+
+- ✅ **Trợ năng & Ngữ nghĩa HTML (`900-a11y-component.test.ts`):**
+  - ☑️ Kiểm tra component render chính xác thẻ `<button>` chuẩn HTML5 (không dùng thẻ phi tương tác như `div`/`a`).
+  - ☑️ Khai báo tường minh `type="button"` tránh tự động submit khi đặt trong thẻ `<form>`.
+  - ☑️ Gán đúng nhãn hỗ trợ đọc màn hình `aria-label` linh hoạt từ Props truyền vào (hỗ trợ i18n).
+  - ☑️ Gán `aria-hidden="true"` cho icon `<span>` trang trí bên trong để tránh trình đọc màn hình đọc lặp rác.
