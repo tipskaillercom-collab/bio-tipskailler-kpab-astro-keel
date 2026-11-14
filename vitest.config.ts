@@ -19,5 +19,11 @@ export default defineConfig({
       port: 4322,
       host: true, // Cho phép kết nối từ bên ngoài container,
     },
+    // Giữ nguyên các module gốc của Node.js (như node:fs, node:path) khi chạy vi.resetModules()
+    server: {
+      deps: {
+        external: [/^node:/],
+      },
+    },
   },
 });
