@@ -172,23 +172,34 @@ Nếu chỉ có CSS ở trên, ta gặp 1 hạn chế: **Không nhớ được l
   // Cấu hình hằng số hệ thống
   const STORAGE_KEY = 'theme';
   const DATA_ATTRIBUTE = 'theme';
+  const VALID_THEMES = ['light', 'dark'];
+  const LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED =
+    '[Theme Anti-Flicker] Storage access denied, fallback to OS setting.';
+  const LOG_MESSAGES_ANTI_FLICKER_MATCH_MEDIA_LISTENER_SETUP_FAILED =
+    '[Theme Anti-Flicker] matchMedia listener setup failed.';
 
   // Lấy trạng thái dark mode từ Hệ điều hành
   const getOSPreference = () =>
     window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 
+  // Hàm kiểm tra giá trị theme có nằm trong danh sách cho phép hay không
+  const getValidatedStoredTheme = () => {
+    const storedTheme = localStorage.getItem(STORAGE_KEY);
+    return VALID_THEMES.includes(storedTheme) ? storedTheme : null;
+  };
+
   // STEP 1: Đọc trạng thái và gán data-theme lên <html>
   const STEP_1_APPLY_INITIAL_THEME = () => {
     try {
-      // 1. Kiểm tra theme đã lưu trong localStorage
-      const storedTheme = localStorage.getItem(STORAGE_KEY);
-      // 2. Ưu tiên: localStorage -> OS preference -> 'light'
-      const theme = storedTheme || getOSPreference();
+      // 1. Chỉ chấp nhận theme hợp lệ ('light' hoặc 'dark') từ localStorage
+      const validStoredTheme = getValidatedStoredTheme();
+      // 2. Ưu tiên: validStoredTheme -> OS preference ('light' | 'dark')
+      const theme = validStoredTheme || getOSPreference();
       // 3. Gán attribute trực tiếp lên HTML root element
       document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
     } catch (error) {
       // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
-      console.warn('[Theme Anti-Flicker] Storage access denied, fallback to OS setting.', error);
+      console.warn(LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED, error);
       document.documentElement.dataset[DATA_ATTRIBUTE] = getOSPreference();
     }
   };
@@ -199,13 +210,13 @@ Nếu chỉ có CSS ở trên, ta gặp 1 hạn chế: **Không nhớ được l
   // STEP 3: Lắng nghe sự kiện hoán đổi trang trong Astro (View Transitions)
   document.addEventListener('astro:after-swap', STEP_1_APPLY_INITIAL_THEME);
 
-  // STEP 4: Lắng nghe sự kiện đổi theme trên Hệ điều hành nếu chưa thiết lập localStorage
+  // STEP 4: Lắng nghe sự kiện đổi theme trên Hệ điều hành nếu chưa có theme hợp lệ trong localStorage
   try {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     mediaQuery.addEventListener('change', (e) => {
       try {
-        if (!localStorage.getItem(STORAGE_KEY)) {
+        if (!getValidatedStoredTheme()) {
           document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
         }
       } catch (_err) {
@@ -213,7 +224,7 @@ Nếu chỉ có CSS ở trên, ta gặp 1 hạn chế: **Không nhớ được l
       }
     });
   } catch (error) {
-    console.warn('[Theme Anti-Flicker] matchMedia listener setup failed.', error);
+    console.warn(LOG_MESSAGES_ANTI_FLICKER_MATCH_MEDIA_LISTENER_SETUP_FAILED, error);
   }
 })();
 ```
@@ -242,6 +253,9 @@ const THEME_TOGGLE_CONFIG = {
   STORAGE_KEY: 'theme',
   DATA_ATTRIBUTE: 'theme',
   TOGGLE_SELECTOR: '[data-theme-toggle]',
+  LOG_MESSAGES: {
+    TOGGLE_STORAGE_DENIED: '[Theme Toggle] Cannot write to localStorage. Using RAM fallback.',
+  },
 } as const;
 
 // Biến bộ nhớ RAM dự phòng khi localStorage bị chặn
@@ -273,7 +287,7 @@ function STEP_3_EXECUTE_THEME_UPDATE(nextTheme: ThemeMode): void {
   try {
     localStorage.setItem(THEME_TOGGLE_CONFIG.STORAGE_KEY, nextTheme);
   } catch (error) {
-    console.warn('[Theme Toggle] Cannot write to localStorage. Using RAM fallback.', error);
+    console.warn(THEME_TOGGLE_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED, error);
     fallbackRamThemeStorage = nextTheme;
   }
 }
@@ -289,6 +303,13 @@ document.addEventListener('click', (event: MouseEvent): void => {
   const nextTheme = STEP_2_CALCULATE_NEXT_THEME(currentTheme);
   STEP_3_EXECUTE_THEME_UPDATE(nextTheme);
 });
+
+/**
+ * Getter phục vụ kiểm thử (Testing) và kiểm tra trạng thái RAM Fallback
+ */
+export function getFallbackRamTheme(): ThemeMode | null {
+  return fallbackRamThemeStorage;
+}
 ```
 
 ---
@@ -314,6 +335,7 @@ const { label } = Astro.props;
 <button type="button" class="theme-toggle" aria-label={label} data-theme-toggle>
   <span aria-hidden="true"></span>
 </button>
+
 ```
 
 ---
@@ -362,10 +384,6 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 - **Độ bền vững ứng dụng (Resilience):** Hệ thống tự động xử lý ngoại lệ khi dung lượng storage bị chặn hoặc đầy (`QuotaExceededError`), chống lỗi DOM Clobbering và tự phục hồi về trạng thái mặc định an toàn.
 
 ---
-
-## 🔍 6. Kết quả đạt được sau kiểm thử:
-
-Hệ thống đã vượt qua 100% các bài test qua Vitest và Happy-DOM bao gồm kiểm thử kiến trúc, chịu tải edge-case và lập trình phòng thủ.
 
 ## 🔍 6. Kết quả đạt được sau kiểm thử:
 
