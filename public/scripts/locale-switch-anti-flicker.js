@@ -4,13 +4,14 @@
   // ==========================================
   const safeGetLocale = () => {
     try {
-      return localStorage.getItem('locale');
+      return localStorage.getItem('locale') || window.__FALLBACK_LOCALE || null;
     } catch {
-      return null;
+      return window.__FALLBACK_LOCALE || null;
     }
   };
 
   const safeSetLocale = (locale) => {
+    window.__FALLBACK_LOCALE = locale; // Luôn giữ bản sao trên RAM cho phiên hiện tại
     try {
       localStorage.setItem('locale', locale);
     } catch {

@@ -2,6 +2,13 @@ import { navigate } from 'astro:transitions/client';
 import { locales, locale as defaultLocale, type Locale } from '../../i18n';
 import { createLocaleSwitchHelpers } from '../../helpers/locale-switch/locale-switch';
 
+// Mở rộng interface Window toàn cục để TypeScript nhận diện biến fallback
+declare global {
+  interface Window {
+    __FALLBACK_LOCALE?: Locale;
+  }
+}
+
 // Gán trực tiếp trình lắng nghe sự kiện click nút đổi ngôn ngữ
 // bằng Event Delegation vào thẻ document toàn cục
 document.addEventListener('click', (event) => {
@@ -37,8 +44,14 @@ document.addEventListener('click', (event) => {
 
   // STEP 3: Lưu trữ cài đặt ngôn ngữ mới vào LocalStorage và xây dựng URL đích
   STEP_3_PREPARE_TARGET_URL: {
-    // Lưu lựa chọn mới của người dùng vào bộ nhớ localStorage
-    localStorage.setItem('locale', nextLocale);
+    try {
+      // Lưu lựa chọn mới của người dùng vào bộ nhớ localStorage
+      localStorage.setItem('locale', nextLocale);
+    } catch {
+      // Bỏ qua lỗi nếu trình duyệt chặn localStorage (chế độ ẩn danh, chặn cookie, đầy bộ nhớ...)
+      // để quá trình chuyển trang ở bước sau vẫn diễn ra bình thường
+    }
+    // localStorage.setItem('locale', nextLocale);
 
     // Xây dựng URL đích mới tinh gọn (giữ nguyên query, hash)
     // Tự giấu tiền tố nếu nextLocale chính là defaultLocale)
@@ -48,6 +61,7 @@ document.addEventListener('click', (event) => {
 
   // STEP 4: Điều hướng trang mượt mà thông qua Astro View Transitions
   STEP_4_NAVIGATE: {
+    window.__FALLBACK_LOCALE = nextLocale;
     // Chuyển trang mượt mà không tải lại toàn bộ tài nguyên nhờ cơ chế nội bộ
     // Single Page App của Astro View Transitions
     navigate(targetUrl);

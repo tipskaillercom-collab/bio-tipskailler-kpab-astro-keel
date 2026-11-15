@@ -24,6 +24,7 @@ describe('000: Locale Switch Architectural Specification Tests', () => {
       Object.defineProperty(window, 'localStorage', originalLocalStorageDescriptor);
     }
     localStorage.clear();
+    delete window.__FALLBACK_LOCALE; // Xóa bộ nhớ fallback trên RAM giữa các test case
 
     // 2. Mock window.location bằng defineProperty để không đụng kiểu setter của TS
     Object.defineProperty(window, 'location', {
