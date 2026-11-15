@@ -12,6 +12,7 @@ import {
   runAntiFlickerScript,
   TEST_CONFIG,
   yieldToEventLoop,
+  mockStorageSetItemDenied,
 } from './theme-toggle.helpers';
 
 describe('002: Security Hardening & Threat Mitigation Tests', () => {
@@ -41,36 +42,21 @@ describe('002: Security Hardening & Threat Mitigation Tests', () => {
 
   describe('1. Denial of Service Mitigation (Storage Quota Exceeded)', () => {
     test('1.1. Storage Quota Exceeded: Bắt QuotaExceededError và sử dụng mượt RAM Fallback', async () => {
-      // ARRANGE: Khởi tạo Anti-Flicker và nạp module theme toggle
+      // ARRANGE
       runAntiFlickerScript();
       await import('../../src/scripts/theme/theme-toggle');
 
-      // Giả lập môi trường bị tràn bộ nhớ trình duyệt (QuotaExceededError) khi gọi setItem
-      const realLocalStorage = window.localStorage;
-      Object.defineProperty(window, 'localStorage', {
-        get() {
-          return {
-            getItem: (key: string) => realLocalStorage.getItem(key),
-            setItem: () => {
-              throw new DOMException('QuotaExceededError', 'QuotaExceededError');
-            },
-            removeItem: (key: string) => realLocalStorage.removeItem(key),
-            clear: () => realLocalStorage.clear(),
-            length: realLocalStorage.length,
-            key: (index: number) => realLocalStorage.key(index),
-          };
-        },
-        configurable: true,
-      });
+      // Giả lập môi trường bị tràn bộ nhớ trình duyệt qua helper
+      mockStorageSetItemDenied('QuotaExceededError');
 
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const button = document.querySelector(TEST_CONFIG.TOGGLE_SELECTOR) as HTMLButtonElement;
 
-      // ACT: Người dùng kích hoạt sự kiện đổi giao diện
+      // ACT
       button.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
       await yieldToEventLoop();
 
-      // ASSERT: Trang không bị crash, ứng dụng tự chuyển đổi mượt sang RAM fallback và thông báo console.warn
+      // ASSERT
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(warnSpy).toHaveBeenCalledWith(
         TEST_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED,

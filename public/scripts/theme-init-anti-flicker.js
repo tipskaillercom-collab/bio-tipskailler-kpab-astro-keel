@@ -19,24 +19,24 @@
 
   // Hàm kiểm tra giá trị theme có nằm trong danh sách cho phép hay không
   const getValidatedStoredTheme = () => {
-    const storedTheme = localStorage.getItem(STORAGE_KEY);
-    return VALID_THEMES.includes(storedTheme) ? storedTheme : null;
+    try {
+      const storedTheme = localStorage.getItem(STORAGE_KEY);
+      return VALID_THEMES.includes(storedTheme) ? storedTheme : null;
+    } catch (error) {
+      // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
+      console.warn(LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED, error);
+      return null;
+    }
   };
 
   // STEP 1: Đọc trạng thái và gán data-theme lên <html>
   const STEP_1_APPLY_INITIAL_THEME = () => {
-    try {
-      // 1. Chỉ chấp nhận theme hợp lệ ('light' hoặc 'dark') từ localStorage
-      const validStoredTheme = getValidatedStoredTheme();
-      // 2. Ưu tiên: validStoredTheme -> OS preference ('light' | 'dark')
-      const theme = validStoredTheme || getOSPreference();
-      // 3. Gán attribute trực tiếp lên HTML root element
-      document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
-    } catch (error) {
-      // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
-      console.warn(LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED, error);
-      document.documentElement.dataset[DATA_ATTRIBUTE] = getOSPreference();
-    }
+    // 1. Chỉ chấp nhận theme hợp lệ ('light' hoặc 'dark') từ localStorage
+    const validStoredTheme = getValidatedStoredTheme();
+    // 2. Ưu tiên: validStoredTheme -> OS preference ('light' | 'dark')
+    const theme = validStoredTheme || getOSPreference();
+    // 3. Gán attribute trực tiếp lên HTML root element
+    document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
   };
 
   // STEP 2: Thực thi ngay lập tức trước First Paint
@@ -50,11 +50,9 @@
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     mediaQuery.addEventListener('change', (e) => {
-      try {
-        if (!getValidatedStoredTheme()) {
-          document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
-        }
-      } catch (_err) {
+      // Nếu không có theme hợp lệ lưu trong localStorage (hoặc bị chặn storage -> trả về null),
+      // tự động cập nhật dataset theo trạng thái mới của OS.
+      if (!getValidatedStoredTheme()) {
         document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
       }
     });

@@ -12,6 +12,7 @@ import {
   runAntiFlickerScript,
   TEST_CONFIG,
   yieldToEventLoop,
+  mockStorageSetItemDenied,
 } from './theme-toggle.helpers';
 
 describe('000: Architectural Specification Tests', () => {
@@ -159,11 +160,11 @@ describe('000: Architectural Specification Tests', () => {
 
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      // ACT: Thực thi Anti-Flicker script và nhường luồng xử lý bất đồng bộ
+      // ACT
       runAntiFlickerScript();
       await yieldToEventLoop();
 
-      // ASSERT: Thuộc tính data-theme tự hạ cấp an toàn về theme OS và đưa ra cảnh báo warn
+      // ASSERT
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(warnSpy).toHaveBeenCalledWith(
         TEST_CONFIG.LOG_MESSAGES.ANTI_FLICKER_STORAGE_DENIED,
@@ -172,7 +173,7 @@ describe('000: Architectural Specification Tests', () => {
     });
 
     test('2.2. localStorage.setItem bị chặn -> Toggle click sử dụng RAM fallback', async () => {
-      // ARRANGE: Khởi tạo theme ban đầu thành công, sau đó chặn quyền ghi setItem
+      // ARRANGE
       matchMediaMock = createMatchMediaMock(false);
       vi.stubGlobal(
         'matchMedia',
@@ -181,35 +182,19 @@ describe('000: Architectural Specification Tests', () => {
       runAntiFlickerScript();
 
       const { getFallbackRamTheme } = await import('../../src/scripts/theme/theme-toggle');
-
-      // Kiểm tra trạng thái ban đầu trước khi click: RAM fallback phải là null
       expect(getFallbackRamTheme()).toBeNull();
 
-      const realLocalStorage = window.localStorage;
-      Object.defineProperty(window, 'localStorage', {
-        get() {
-          return {
-            getItem: (key: string) => realLocalStorage.getItem(key),
-            setItem: () => {
-              throw new DOMException('Access denied', 'SecurityError');
-            },
-            removeItem: (key: string) => realLocalStorage.removeItem(key),
-            clear: () => realLocalStorage.clear(),
-            length: realLocalStorage.length,
-            key: (index: number) => realLocalStorage.key(index),
-          };
-        },
-        configurable: true,
-      });
+      // Sử dụng helper đã làm gọn
+      mockStorageSetItemDenied('SecurityError');
 
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const button = document.querySelector(TEST_CONFIG.TOGGLE_SELECTOR) as HTMLButtonElement;
 
-      // ACT: Giả lập sự kiện người dùng bấm vào nút chuyển đổi giao diện
+      // ACT
       button.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
       await yieldToEventLoop();
 
-      // ASSERT: Giao diện DOM vẫn đổi sang 'dark' thành công nhờ sử dụng bộ nhớ tạm (RAM Fallback)
+      // ASSERT
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(getFallbackRamTheme()).toBe('dark');
       expect(warnSpy).toHaveBeenCalledWith(
@@ -219,7 +204,7 @@ describe('000: Architectural Specification Tests', () => {
     });
 
     test('2.3. localStorage.setItem bị chặn -> Click thêm lần nữa cập nhật lại RAM fallback', async () => {
-      // ARRANGE: Khởi tạo môi trường 'light' và chặn localStorage.setItem
+      // ARRANGE
       matchMediaMock = createMatchMediaMock(false);
       vi.stubGlobal(
         'matchMedia',
@@ -229,52 +214,52 @@ describe('000: Architectural Specification Tests', () => {
 
       const { getFallbackRamTheme } = await import('../../src/scripts/theme/theme-toggle');
 
-      const realLocalStorage = window.localStorage;
-      Object.defineProperty(window, 'localStorage', {
-        get() {
-          return {
-            getItem: (key: string) => realLocalStorage.getItem(key),
-            setItem: () => {
-              throw new DOMException('Access denied', 'SecurityError');
-            },
-            removeItem: (key: string) => realLocalStorage.removeItem(key),
-            clear: () => realLocalStorage.clear(),
-            length: realLocalStorage.length,
-            key: (index: number) => realLocalStorage.key(index),
-          };
-        },
-        configurable: true,
-      });
+      // Sử dụng helper đã làm gọn
+      mockStorageSetItemDenied('SecurityError');
 
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const button = document.querySelector(TEST_CONFIG.TOGGLE_SELECTOR) as HTMLButtonElement;
 
-      // ACT 1: Click lần 1 ('light' -> 'dark')
+      // ACT 1
       button.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
       await yieldToEventLoop();
 
-      // ASSERT: `ACT 1`
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('dark');
       expect(getFallbackRamTheme()).toBe('dark');
-      expect(warnSpy).toHaveBeenCalledWith(
-        TEST_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED,
-        expect.any(Error),
-      );
 
-      // ACT 2: Click lần 2 ('dark' -> 'light')
+      // ACT 2
       button.dispatchEvent(new MouseEvent('click', { bubbles: true, composed: true }));
       await yieldToEventLoop();
 
-      // ASSERT: `ACT 2`: DOM và biến RAM fallback cùng đảo ngược về 'light'.
       expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
       expect(getFallbackRamTheme()).toBe('light');
-      expect(warnSpy).toHaveBeenCalledWith(
-        TEST_CONFIG.LOG_MESSAGES.TOGGLE_STORAGE_DENIED,
-        expect.any(Error),
+      expect(warnSpy).toHaveBeenCalledTimes(2);
+    });
+
+    test('2.4. matchMedia bị lỗi khi thêm Event Listener -> Anti-Flicker catch lỗi an toàn và warn log', async () => {
+      // ARRANGE: Giả lập matchMedia ném ra lỗi khi gọi addEventListener
+      vi.stubGlobal(
+        'matchMedia',
+        vi.fn().mockImplementation(() => ({
+          matches: false,
+          addEventListener: () => {
+            throw new Error('matchMedia not supported');
+          },
+        })),
       );
 
-      // ASSERT: `ACT 1` + `ACT 1` : Cảnh báo gọi tổng cộng 2 lần
-      expect(warnSpy).toHaveBeenCalledTimes(2);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // ACT: Chạy script Anti-Flicker
+      runAntiFlickerScript();
+      await yieldToEventLoop();
+
+      // ASSERT: Trang vẫn gán theme 'light' bình thường và log warn đúng thông điệp cấu hình
+      expect(document.documentElement.dataset[TEST_CONFIG.DATA_ATTRIBUTE]).toBe('light');
+      expect(warnSpy).toHaveBeenCalledWith(
+        TEST_CONFIG.LOG_MESSAGES.ANTI_FLICKER_MATCH_MEDIA_LISTENER_FAILED,
+        expect.any(Error),
+      );
     });
   });
 

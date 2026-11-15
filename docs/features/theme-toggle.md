@@ -56,6 +56,24 @@
        │        └─► Gán <html data-theme="..."> NGAY LẬP TỨC! (CHỐNG NHÁY 2)
        │
        └─► 3. Giao diện vẽ ra màn hình (Paint) ──► Mượt mà 100%, đúng ý người dùng, không nháy 1 miligiây nào!
+[Người dùng mở trang]
+       │
+       ├─► 1. Trình duyệt nạp CSS ──► Áp dụng màu mặc định theo OS (@media / color-scheme) (CHỐNG NHÁY 1)
+       │
+       ├─► 2. Script đồng bộ chạy ở <head> (STEP 1 & 2) ──► Thử đọc localStorage:
+       │        ├─ [Thành công & hợp lệ] ──► Ưu tiên lấy theme đã lưu ('light' | 'dark')
+       │        ├─ [Trống / Không hợp lệ / Bị trình duyệt chặn (catch)] ──► Fallback về màu của OS
+       │        └─► Gán <html data-theme="..."> NGAY LẬP TỨC! (CHỐNG NHÁY 2)
+       │
+       ├─► 3. Giao diện vẽ ra màn hình (First Paint) ──► Hiển thị mượt mà 100%, không nháy!
+       │
+       └─► 4. Chạy ngầm & Lắng nghe sự kiện (Runtime Listeners):
+                ├─ [Chuyển trang trong Astro] (Sự kiện 'astro:after-swap' - STEP 3)
+                │    └─► Chạy lại bước 2 để giữ nguyên data-theme cho trang mới (CHỐNG NHÁY KHI CHUYỂN TRANG)
+                │
+                └─ [Người dùng đổi Dark/Light trên Hệ điều hành] (Sự kiện 'change' của matchMedia - STEP 4)
+                     └─► Kiểm tra: Nếu user CHƯA tự khóa cứng theme trong localStorage ──► Tự động cập nhật theo OS!
+
 ```
 
 Toàn bộ cấu hình mã nguồn chi tiết từ các file `global.css`, `theme-init-anti-flicker.js`, `theme-toggle.ts`, `ThemeToggle.astro` cho đến `BaseLayout.astro` có thể được tham khảo trực tiếp trong hệ thống kho lưu trữ của dự án.
@@ -242,24 +260,24 @@ Nếu chỉ có CSS ở trên, ta gặp 1 hạn chế: **Không nhớ được l
 
   // Hàm kiểm tra giá trị theme có nằm trong danh sách cho phép hay không
   const getValidatedStoredTheme = () => {
-    const storedTheme = localStorage.getItem(STORAGE_KEY);
-    return VALID_THEMES.includes(storedTheme) ? storedTheme : null;
+    try {
+      const storedTheme = localStorage.getItem(STORAGE_KEY);
+      return VALID_THEMES.includes(storedTheme) ? storedTheme : null;
+    } catch (error) {
+      // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
+      console.warn(LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED, error);
+      return null;
+    }
   };
 
   // STEP 1: Đọc trạng thái và gán data-theme lên <html>
   const STEP_1_APPLY_INITIAL_THEME = () => {
-    try {
-      // 1. Chỉ chấp nhận theme hợp lệ ('light' hoặc 'dark') từ localStorage
-      const validStoredTheme = getValidatedStoredTheme();
-      // 2. Ưu tiên: validStoredTheme -> OS preference ('light' | 'dark')
-      const theme = validStoredTheme || getOSPreference();
-      // 3. Gán attribute trực tiếp lên HTML root element
-      document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
-    } catch (error) {
-      // Graceful Degradation: Fallback về OS setting nếu localStorage bị cấm
-      console.warn(LOG_MESSAGES_ANTI_FLICKER_STORAGE_DENIED, error);
-      document.documentElement.dataset[DATA_ATTRIBUTE] = getOSPreference();
-    }
+    // 1. Chỉ chấp nhận theme hợp lệ ('light' hoặc 'dark') từ localStorage
+    const validStoredTheme = getValidatedStoredTheme();
+    // 2. Ưu tiên: validStoredTheme -> OS preference ('light' | 'dark')
+    const theme = validStoredTheme || getOSPreference();
+    // 3. Gán attribute trực tiếp lên HTML root element
+    document.documentElement.dataset[DATA_ATTRIBUTE] = theme;
   };
 
   // STEP 2: Thực thi ngay lập tức trước First Paint
@@ -273,11 +291,9 @@ Nếu chỉ có CSS ở trên, ta gặp 1 hạn chế: **Không nhớ được l
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     mediaQuery.addEventListener('change', (e) => {
-      try {
-        if (!getValidatedStoredTheme()) {
-          document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
-        }
-      } catch (_err) {
+      // Nếu không có theme hợp lệ lưu trong localStorage (hoặc bị chặn storage -> trả về null),
+      // tự động cập nhật dataset theo trạng thái mới của OS.
+      if (!getValidatedStoredTheme()) {
         document.documentElement.dataset[DATA_ATTRIBUTE] = e.matches ? 'dark' : 'light';
       }
     });
@@ -445,30 +461,40 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 
 ## 🔍 6. Kết quả đạt được sau kiểm thử:
 
-Hệ thống đã vượt qua **100%** trên cả 4 bộ kiểm thử tự động sử dụng Vitest, Happy-DOM và AstroContainer, đáp ứng đầy đủ các tiêu chí về kiến
-trúc, trải nghiệm người dùng, độ bền vững (Resilience), trợ năng (a11y) và bảo mật phòng thủ.
+Hệ thống đã vượt qua **100%** trên cả 4 bộ kiểm thử tự động sử dụng Vitest, Happy-DOM và AstroContainer, đáp  
+ứng đầy đủ các tiêu chí về kiến trúc, trải nghiệm người dùng, độ bền vững (Resilience), trợ năng (a11y) và bảo
+mật phòng thủ.
 
 ### 📋 Bảng tổng hợp đối chiếu kết quả kiểm thử (Test Matrix Verification):
 
 - ✅ **Kiến trúc & Khởi tạo (`000-architectural-spec.test.ts`):**
   - ☑️ Đọc chính xác cấu hình OS preference (`dark`/`light`) khi `localStorage` trống.
   - ☑️ Ưu tiên dữ liệu cài đặt người dùng lưu trong `localStorage` đè lên OS preference.
-  - ☑️ Đồng bộ tự động theo thời gian thực (Live OS Scheme Syncing) khi hệ điều hành thay đổi giao diện (khi chưa khóa lựa chọn cá nhân).
-  - ☑️ Khôi phục chính xác trạng thái `data-theme` và duy trì bộ lắng nghe sự kiện khi Astro chuyển trang SPA (`astro:after-swap`).
+  - ☑️ Bắt lỗi ngoại lệ và log cảnh báo an toàn khi `matchMedia` không hỗ trợ hoặc bị lỗi thiết lập listener  
+    (`ANTI_FLICKER_MATCH_MEDIA_LISTENER_FAILED`).
+  - ☑️ Đồng bộ tự động theo thời gian thực (Live OS Scheme Syncing) khi hệ điều hành thay đổi giao diện (khi  
+    chưa khóa lựa chọn cá nhân).
+  - ☑️ Khôi phục chính xác trạng thái `data-theme` và duy trì bộ lắng nghe sự kiện khi Astro chuyển trang SPA
+    (`astro:after-swap`).
 
 - ✅ **Chịu tải & Thao tác biên (`001-stress-edge-cases.test.ts`):**
   - ☑️ Bắt sự kiện chuyển đổi thành công qua Event Delegation khi click vào thẻ con `<span>` bên trong button.
   - ☑️ Bỏ qua các sự kiện click bên ngoài khu vực nút toggle.
-  - ☑️ Chống nghẽn/đua lệnh (Race Conditions) khi người dùng nhấp chuột nhanh liên tục (Rapid Clicks 10 lần/giây).
-  - ☑️ Tự phục hồi an toàn (Auto-recovery Guard) về theme mặc định khi thuộc tính `dataset.theme` bị giả mạo dữ liệu rác (`Corrupted Dataset Attack`).
+  - ☑️ Chống nghẽn/đua lệnh (Race Conditions) khi người dùng nhấp chuột nhanh liên tục (Rapid Clicks 10  
+    lần/giây).
+  - ☑️ Tự phục hồi an toàn (Auto-recovery Guard) về theme mặc định khi thuộc tính `dataset.theme` bị giả mạo  
+    dữ liệu rác (`Corrupted Dataset Attack`).
 
 - ✅ **Lập trình phòng thủ & Hạ cấp an toàn (`002-security-hardening.test.ts`):**
-  - ☑️ Xử lý mượt mà ngoại lệ tràn bộ nhớ trình duyệt (`QuotaExceededError`), tự động hạ cấp an toàn sang bộ nhớ tạm RAM (`RAM Fallback`).
-  - ☑️ Bắt ngoại lệ truy cập bộ nhớ bị chặn (`SecurityError` ở chế độ Ẩn danh/Brave) mà không làm sập ứng dụng.
+  - ☑️ Xử lý mượt mà ngoại lệ tràn bộ nhớ trình duyệt (`QuotaExceededError`), tự động hạ cấp an toàn sang bộ  
+    nhớ tạm RAM (`RAM Fallback`).
+  - ☑️ Bắt ngoại lệ truy cập bộ nhớ bị chặn (`SecurityError` ở chế độ Ẩn danh/Brave) mà không làm sập ứng  
+    dụng.
   - ☑️ Chống tấn công `DOM Clobbering` (thẻ HTML lạ chèn đè biến toàn cục `window.localStorage`).
 
 - ✅ **Trợ năng & Ngữ nghĩa HTML (`900-a11y-component.test.ts`):**
-  - ☑️ Kiểm tra component render chính xác thẻ `<button>` chuẩn HTML5 (không dùng thẻ phi tương tác như `div`/`a`).
+  - ☑️ Kiểm tra component render chính xác thẻ `<button>` chuẩn HTML5 (không dùng thẻ phi tương tác như  
+    `div`/`a`).
   - ☑️ Khai báo tường minh `type="button"` tránh tự động submit khi đặt trong thẻ `<form>`.
   - ☑️ Gán đúng nhãn hỗ trợ đọc màn hình `aria-label` linh hoạt từ Props truyền vào (hỗ trợ i18n).
   - ☑️ Gán `aria-hidden="true"` cho icon `<span>` trang trí bên trong để tránh trình đọc màn hình đọc lặp rác.

@@ -22,6 +22,8 @@ export const TEST_CONFIG = {
   LOG_MESSAGES: {
     ANTI_FLICKER_STORAGE_DENIED:
       '[Theme Anti-Flicker] Storage access denied, fallback to OS setting.',
+    ANTI_FLICKER_MATCH_MEDIA_LISTENER_FAILED:
+      '[Theme Anti-Flicker] matchMedia listener setup failed.',
     TOGGLE_STORAGE_DENIED: '[Theme Toggle] Cannot write to localStorage. Using RAM fallback.',
   },
 } as const;
@@ -100,4 +102,32 @@ export function createMatchMediaMock(initialPrefersDark: boolean = false) {
       listeners.forEach((listener) => listener(event));
     },
   };
+}
+
+/**
+ * Giả lập môi trường bị chặn quyền ghi setItem vào localStorage (SecurityError / QuotaExceededError).
+ * @param errorType Loại lỗi DOMException cần ném ra ('SecurityError' | 'QuotaExceededError')
+ */
+export function mockStorageSetItemDenied(
+  errorType: 'SecurityError' | 'QuotaExceededError' = 'SecurityError',
+): void {
+  const realLocalStorage = window.localStorage;
+  Object.defineProperty(window, 'localStorage', {
+    get() {
+      return {
+        getItem: (key: string) => realLocalStorage.getItem(key),
+        setItem: () => {
+          throw new DOMException(
+            errorType === 'QuotaExceededError' ? 'QuotaExceededError' : 'Access denied',
+            errorType,
+          );
+        },
+        removeItem: (key: string) => realLocalStorage.removeItem(key),
+        clear: () => realLocalStorage.clear(),
+        length: realLocalStorage.length,
+        key: (index: number) => realLocalStorage.key(index),
+      };
+    },
+    configurable: true,
+  });
 }
