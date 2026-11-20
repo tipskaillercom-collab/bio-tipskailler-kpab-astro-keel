@@ -35,6 +35,7 @@ export const en = {
   'nav.label': 'Main navigation',
   'nav.brandHome': '{site} home',
   'theme.toggle': 'Toggle color theme',
+  'locale.switch': 'Switch language',
   'footer.notes': 'Notes',
   'social.label': 'Social links',
 

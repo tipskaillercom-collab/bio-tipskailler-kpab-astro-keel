@@ -21,6 +21,7 @@ fill="#FFFF00" />
   'nav.label': 'Điều hướng chính',
   'nav.brandHome': 'Trang chủ {site}',
   'theme.toggle': 'Chuyển đổi giao diện',
+  'locale.switch': 'Chuyển đổi ngôn ngữ',
   'footer.notes': 'Ghi chú',
   'social.label': 'Liên kết mạng xã hội',
 

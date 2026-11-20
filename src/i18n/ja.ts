@@ -20,6 +20,7 @@ export const ja: UIStrings = {
   'nav.label': 'メインナビゲーション',
   'nav.brandHome': '{site} のホーム',
   'theme.toggle': '配色テーマを切り替える',
+  'locale.switch': '言語を切り替える',
   'footer.notes': 'ノート',
   'social.label': 'ソーシャルリンク',
 
