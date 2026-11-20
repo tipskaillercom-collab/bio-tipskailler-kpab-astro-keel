@@ -49,15 +49,6 @@
 ```text
 [Người dùng mở trang]
        │
-       ├─► 1. Trình duyệt nạp CSS ──► color-scheme & @media tự ăn màu theo OS ngay lập tức! (CHỐNG NHÁY 1)
-       │
-       ├─► 2. Inline JS chạy ở <head> ──► Kiểm tra localStorage:
-       │        ├─ Nhận thấy người dùng chọn theme khác OS?
-       │        └─► Gán <html data-theme="..."> NGAY LẬP TỨC! (CHỐNG NHÁY 2)
-       │
-       └─► 3. Giao diện vẽ ra màn hình (Paint) ──► Mượt mà 100%, đúng ý người dùng, không nháy 1 miligiây nào!
-[Người dùng mở trang]
-       │
        ├─► 1. Trình duyệt nạp CSS ──► Áp dụng màu mặc định theo OS (@media / color-scheme) (CHỐNG NHÁY 1)
        │
        ├─► 2. Script đồng bộ chạy ở <head> (STEP 1 & 2) ──► Thử đọc localStorage:
@@ -452,14 +443,7 @@ import ThemeToggle from '../components/ThemeToggle.astro';
 
 ---
 
-## 🛡️ 5. Triết lý Lập trình Phòng thủ (Defensive Programming) & Ranh giới Bảo mật Client-Server
-
-- **Ranh giới Client vs. Server:** Phía Client là môi trường không đáng tin cậy; các từ khóa type safety chỉ có tác dụng khi biên dịch. Phía Server mới là nơi xử lý logic nghiệp vụ nhạy cảm.
-- **Độ bền vững ứng dụng (Resilience):** Hệ thống tự động xử lý ngoại lệ khi dung lượng storage bị chặn hoặc đầy (`QuotaExceededError`), chống lỗi DOM Clobbering và tự phục hồi về trạng thái mặc định an toàn.
-
----
-
-## 🔍 6. Kết quả đạt được sau kiểm thử:
+## 5. 🔍 Kết quả đạt được sau kiểm thử:
 
 Hệ thống đã vượt qua **100%** trên cả 4 bộ kiểm thử tự động sử dụng Vitest, Happy-DOM và AstroContainer, đáp  
 ứng đầy đủ các tiêu chí về kiến trúc, trải nghiệm người dùng, độ bền vững (Resilience), trợ năng (a11y) và bảo
