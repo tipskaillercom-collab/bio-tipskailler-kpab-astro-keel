@@ -1,4 +1,8 @@
-// Các hàm tiện ích xử lý URL và điều hướng ngôn ngữ ở phía Client (Trình duyệt)
+/**
+ * File: src/helpers/locale-switch/locale-switch.js
+ * Mô tả: Bộ tiện ích xử lý URL, bóc tách và tạo đường dẫn đa ngôn ngữ phía Client & Server.
+ */
+
 export function createLocaleSwitchHelpers() {
   // === NOTE: Trong đoạn này cả server/client đều đọc được ====
   // code...
@@ -7,32 +11,44 @@ export function createLocaleSwitchHelpers() {
   const helpers = {
     // NOTE: Tại đây trở xuống, Phía Client đều không đọc được các giá trị, hàm hoặc bất cứ gì ở đoạn trên
 
-    // Tách đường dẫn URL thành các phân đoạn mảng (Ví dụ: "/vi/posts/abc" -> ["vi", "posts", "abc"])
+    /**
+     * Tách đường dẫn URL hiện tại thành mảng các phân đoạn (segments)
+     * Đầu ra: Mảng các chuỗi đại diện cho từng cấp đường dẫn (ví dụ: ["vi", "about"])
+     */
     getSegments: () => {
       return window.location.pathname.split('/').filter(Boolean);
     },
 
-    // Kiểm tra xem chuỗi phân đoạn có độ dài bằng 2 và nằm trong danh sách ngôn ngữ hỗ trợ không
+    /**
+     * Kiểm tra một phân đoạn đường dẫn có phải là mã ngôn ngữ hợp lệ hay không
+     * Đầu vào: seg (chuỗi phân đoạn), locales (danh sách ngôn ngữ hỗ trợ)
+     */
     isValidLocale: (seg, locales) => {
       return !!(seg && seg.length === 2 && locales.includes(seg));
     },
 
-    // Xác định ngôn ngữ hiện tại của URL. Nếu phân đoạn đầu tiên hợp lệ thì trả về nó, ngược lại dùng mặc định hệ thống
+    /**
+     * STEP 1: Xác định mã ngôn ngữ hiện tại của trang dựa trên URL
+     */
     getCurrentLocale: (pathSegments, hasLocalePrefix, defaultLocale) => {
       const firstSegment = pathSegments[0];
       return pathSegments.length > 0 && hasLocalePrefix ? firstSegment : defaultLocale;
     },
 
-    // Loại bỏ mã ngôn ngữ khỏi mảng phân đoạn nếu URL đó đang chứa mã ngôn ngữ hợp lệ
+    /**
+     * STEP 2: Loại bỏ mã ngôn ngữ khỏi danh sách phân đoạn nếu URL có chứa tiền tố locale
+     */
     cleanSegments: (pathSegments, hasLocalePrefix) => {
       const clean = [...pathSegments];
       if (hasLocalePrefix) {
-        clean.shift(); // Xóa phần tử đầu tiên (Ví dụ: ["vi", "about"] -> ["about"])
+        clean.shift();
       }
       return clean;
     },
 
-    // Xây dựng đường dẫn chuẩn SEO
+    /**
+     * STEP 3: Xây dựng đường dẫn URL đích chuẩn SEO kết hợp Query và Hash
+     */
     buildPath: (preferredLocale, cleanSegments, defaultLocale) => {
       const newPath =
         preferredLocale === defaultLocale

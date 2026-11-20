@@ -6,7 +6,6 @@
 
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { vi } from 'vitest';
 import { createLocaleSwitchHelpers } from '../../src/helpers/locale-switch/locale-switch';
 
 /**
@@ -70,4 +69,27 @@ export function setupWindowLocaleHelpers(
 export function runLocaleAntiFlickerScript(): void {
   // eslint-disable-next-line no-eval
   eval(localeAntiFlickerCode);
+}
+
+/**
+ * Tạo nút bấm đổi ngôn ngữ [data-locale-toggle] gắn vào document.body để mô phỏng thao tác click.
+ */
+export function mountLocaleToggleButton(): HTMLButtonElement {
+  const button = document.createElement('button');
+  button.setAttribute('data-locale-toggle', '');
+  document.body.appendChild(button);
+  return button;
+}
+
+/**
+ * Giả lập hành vi của Astro View Transitions navigate(targetUrl):
+ * Cập nhật pathname hiện tại và kích hoạt sự kiện 'astro:after-swap'.
+ */
+export function simulateAstroNavigate(targetUrl: string): void {
+  const url = new URL(targetUrl, 'http://localhost');
+  window.location.pathname = url.pathname;
+  window.location.search = url.search;
+  window.location.hash = url.hash;
+  window.location.href = url.href;
+  document.dispatchEvent(new Event('astro:after-swap'));
 }

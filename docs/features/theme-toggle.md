@@ -426,7 +426,11 @@ import ThemeToggle from '../components/ThemeToggle.astro';
   <body>
     <header class="site-header">
       <!-- ... nav content ... -->
-      <ThemeToggle label={t('theme.toggle')} />
+      <!-- Gom nhóm các nút chức năng ở header -->
+      <div class="header-actions">
+        <ThemeToggle label={t('theme.toggle')} />
+        <LocaleToggle label="Switch language" />
+      </div>
     </header>
 
     <main>

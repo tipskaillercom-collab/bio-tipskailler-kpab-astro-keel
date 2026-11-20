@@ -5,28 +5,40 @@
  */
 
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { navigate } from 'astro:transitions/client';
 import {
   LOCALE_TEST_CONFIG,
+  mountLocaleToggleButton,
   runLocaleAntiFlickerScript,
   setupWindowLocaleHelpers,
+  simulateAstroNavigate,
   yieldToEventLoop,
 } from './locale-switch.helpers';
+import '../../src/scripts/locale-switch/locale-switch-toggler';
+
+// Mock module điều hướng của Astro View Transitions
+vi.mock('astro:transitions/client', () => ({
+  navigate: vi.fn((url: string) => {
+    simulateAstroNavigate(url);
+  }),
+}));
 
 describe('000: Locale Switch Architectural Specification Tests', () => {
-  // Lưu lại PropertyDescriptor gốc của localStorage và location để khôi phục sau mỗi test case
   const originalLocalStorageDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
   const originalLocation = window.location;
   const originalLocationDescriptor = Object.getOwnPropertyDescriptor(window, 'location');
 
+  const swapListeners: EventListenerOrEventListenerObject[] = [];
+  const originalAddEventListener = document.addEventListener.bind(document);
+
   beforeEach(() => {
-    // 1. Phục hồi localStorage Descriptor gốc
     if (originalLocalStorageDescriptor) {
       Object.defineProperty(window, 'localStorage', originalLocalStorageDescriptor);
     }
     localStorage.clear();
-    delete window.__FALLBACK_LOCALE; // Xóa bộ nhớ fallback trên RAM giữa các test case
+    delete window.__FALLBACK_LOCALE;
+    document.body.innerHTML = '';
 
-    // 2. Mock window.location bằng defineProperty để không đụng kiểu setter của TS
     Object.defineProperty(window, 'location', {
       configurable: true,
       enumerable: true,
@@ -40,11 +52,25 @@ describe('000: Locale Switch Architectural Specification Tests', () => {
       },
     });
 
-    // 3. Khởi tạo helper trên window
+    vi.spyOn(document, 'addEventListener').mockImplementation((type, listener, options) => {
+      if (type === 'astro:after-swap') {
+        swapListeners.push(listener);
+      }
+      return originalAddEventListener(type, listener, options);
+    });
+
     setupWindowLocaleHelpers(['en', 'ja', 'vi'], 'en');
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
+    while (swapListeners.length > 0) {
+      const listener = swapListeners.pop();
+      if (listener) {
+        document.removeEventListener('astro:after-swap', listener);
+      }
+    }
+
     if (originalLocationDescriptor) {
       Object.defineProperty(window, 'location', originalLocationDescriptor);
     }
@@ -53,71 +79,101 @@ describe('000: Locale Switch Architectural Specification Tests', () => {
 
   describe('1. Kịch bản Khởi tạo Ưu tiên & Anti-Flicker Routing', () => {
     test('1.1. Ưu tiên đọc localStorage khi hợp lệ', async () => {
-      // ARRANGE: Cấu hình localStorage = 'vi'
       localStorage.setItem(LOCALE_TEST_CONFIG.STORAGE_KEY, 'vi');
       window.location.pathname = '/vi/about';
 
-      // ACT: Thực thi Anti-Flicker
       runLocaleAntiFlickerScript();
       await yieldToEventLoop();
 
-      // ASSERT: HTML element nhận data-locale="vi"
       expect(document.documentElement.dataset[LOCALE_TEST_CONFIG.DATA_ATTRIBUTE]).toBe('vi');
     });
 
     test('1.2. Fallback về navigator.language khi localStorage trống', async () => {
-      // ARRANGE: Giả lập browser language là 'ja-JP'
       vi.spyOn(navigator, 'language', 'get').mockReturnValue('ja-JP');
 
-      // ACT: Thực thi Anti-Flicker
       runLocaleAntiFlickerScript();
       await yieldToEventLoop();
 
-      // ASSERT: Chuyển hướng sang trang target locale 'ja'
       expect(window.location.href).toContain('/ja');
     });
 
     test('1.3. Chuẩn hóa URL thừa tiền tố mặc định (Default Prefix Guard)', async () => {
-      // ARRANGE: URL chứa /en/about (khi en là defaultLocale)
       window.location.pathname = '/en/about';
 
-      // ACT: Thực thi Anti-Flicker
       runLocaleAntiFlickerScript();
       await yieldToEventLoop();
 
-      // ASSERT: Tự động điều hướng về canonical URL không chứa /en
       expect(window.location.href).toBe('/about');
     });
   });
 
   describe('2. Kịch bản Hạ cấp An toàn (Graceful Degradation)', () => {
-    test('2.1. Chặn localStorage -> Anti-Flicker fallback không crash ứng dụng', async () => {
-      // ARRANGE: Giả lập môi trường bị chặn SecurityError
+    const blockLocalStorage = () => {
       Object.defineProperty(window, 'localStorage', {
         get() {
           throw new DOMException('Access denied', 'SecurityError');
         },
         configurable: true,
       });
+    };
 
-      // ACT & ASSERT: Thực thi mà không throw exception
+    test('2.1. Chặn localStorage -> Anti-Flicker fallback không crash ứng dụng', async () => {
+      blockLocalStorage();
+
       expect(() => runLocaleAntiFlickerScript()).not.toThrow();
+    });
+
+    test('2.2. Chặn localStorage -> Click nút đổi ngôn ngữ lần đầu chuyển đúng sang ngôn ngữ kế tiếp và không bị đá ngược', async () => {
+      blockLocalStorage();
+      runLocaleAntiFlickerScript();
+      const toggleBtn = mountLocaleToggleButton();
+
+      toggleBtn.click();
+      await yieldToEventLoop();
+
+      expect(navigate).toHaveBeenCalledTimes(1);
+      expect(navigate).toHaveBeenCalledWith('/ja/');
+      expect(window.location.pathname).toBe('/ja/');
+      expect(document.documentElement.dataset.locale).toBe('ja');
+      expect(window.__FALLBACK_LOCALE).toBe('ja');
+    });
+
+    test('2.3. Chặn localStorage -> Click đổi ngôn ngữ liên tiếp xoay vòng trọn vẹn chu kỳ (en -> ja -> vi -> en)', async () => {
+      blockLocalStorage();
+      runLocaleAntiFlickerScript();
+      const toggleBtn = mountLocaleToggleButton();
+
+      toggleBtn.click();
+      await yieldToEventLoop();
+      expect(navigate).toHaveBeenLastCalledWith('/ja/');
+      expect(window.location.pathname).toBe('/ja/');
+      expect(document.documentElement.dataset.locale).toBe('ja');
+
+      toggleBtn.click();
+      await yieldToEventLoop();
+      expect(navigate).toHaveBeenLastCalledWith('/vi/');
+      expect(window.location.pathname).toBe('/vi/');
+      expect(document.documentElement.dataset.locale).toBe('vi');
+
+      toggleBtn.click();
+      await yieldToEventLoop();
+      expect(navigate).toHaveBeenLastCalledWith('/');
+      expect(window.location.pathname).toBe('/');
+      expect(document.documentElement.dataset.locale).toBe('en');
+      expect(navigate).toHaveBeenCalledTimes(3);
     });
   });
 
   describe('3. Kịch bản Tương thích Astro View Transitions', () => {
     test('3.1. astro:after-swap khôi phục thuộc tính data-locale trên DOM mới', async () => {
-      // ARRANGE: Đặt locale = 'ja'
       localStorage.setItem(LOCALE_TEST_CONFIG.STORAGE_KEY, 'ja');
       window.location.pathname = '/ja/';
       runLocaleAntiFlickerScript();
 
-      // ACT: Giả lập astro:after-swap tráo đổi thẻ html
       document.documentElement.removeAttribute('data-locale');
       document.dispatchEvent(new Event('astro:after-swap'));
       await yieldToEventLoop();
 
-      // ASSERT: data-locale được gán lại thành 'ja'
       expect(document.documentElement.dataset.locale).toBe('ja');
     });
   });
