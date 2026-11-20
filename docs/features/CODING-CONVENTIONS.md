@@ -49,3 +49,10 @@ Tất cả các file mã nguồn (`.ts`, `.js`, `.css`, `.html`, v.v.) bắt bu�
   - Mọi hàm, class, interface, biến phức tạp và từng bước xử lý logic **BẮT BUỘC** phải có comment giải thích chi tiết bằng **Tiếng Việt**.
   - Không viết comment qua loa, chung chung. Comment phải nêu rõ: **Mục đích**, **Đầu vào/Đầu ra**, và **Lý do xử lý logic** đó.
 - **Type/Interface tường minh:** Luôn khai báo kiểu dữ liệu tường minh (strict typing) cho tất cả các biến...
+
+---
+
+## 6. Triết lý Lập trình Phòng thủ (Defensive Programming) & Ranh giới Bảo mật Client-Server
+
+- **Ranh giới Client vs. Server:** Phía Client là môi trường không đáng tin cậy; các từ khóa type safety chỉ có tác dụng khi biên dịch. Phía Server mới là nơi xử lý logic nghiệp vụ nhạy cảm.
+- **Độ bền vững ứng dụng (Resilience):** Hệ thống tự động xử lý ngoại lệ khi dung lượng storage bị chặn hoặc đầy (`QuotaExceededError`), chống lỗi DOM Clobbering và tự phục hồi về trạng thái mặc định an toàn.
