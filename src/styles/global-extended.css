@@ -2,79 +2,32 @@
 
 :root {
   /* ------------- ROOT ------------------ */
-  --root-base-extend-line-width-heading: 1rem;
-  --root-base-extend-line-padding-heading: 1.2rem;
+  --base-extend-line-width-heading: 1rem;
+  --base-extend-line-padding-heading: 1.2rem;
 
-  /* --- ROOT cho LIGHT --- */
-  /* With @media */
-  /* ... */
-
-  /* WithOut @media */
+  /* --- LIGHT --- */
   /* - Định nghĩa 'line-width-heading */
-  --root-base-extend-light-line-width-heading: round(
+  --base-extend-light-line-width-heading: round(
     up,
-    calc(var(--root-base-extend-line-width-heading) / 4),
+    calc(var(--base-extend-line-width-heading) / 4),
     1px
   );
   /* - Định nghĩa 'line-padding-heading */
-  --root-base-extend-light-line-padding-heading: var(--root-base-extend-line-padding-heading);
+  --base-extend-light-line-padding-heading: var(--base-extend-line-padding-heading);
   /* ---------------------- */
 
-  /* --- ROOT cho DARK --- */
-  /* With @media */
+  /* --- DARK --- */
   /* - Định nghĩa 'line-width-heading */
-  --root-base-extend-dark-media-line-width-heading: var(--root-base-extend-dark-line-width-heading);
-  /* - Định nghĩa 'line-padding-heading */
-  --root-base-extend-dark-media-line-padding-heading: var(
-    --root-base-extend-dark-line-padding-heading
-  );
-
-  /* WithOut @media */
-  /* - Định nghĩa 'line-width-heading */
-  --root-base-extend-dark-line-width-heading: round(
-    calc(var(--root-base-extend-line-width-heading) / 7),
+  --base-extend-dark-line-width-heading: round(
+    calc(var(--base-extend-line-width-heading) / 7),
     1px
   );
   /* - Định nghĩa 'line-padding-heading */
-  --root-base-extend-dark-line-padding-heading: var(--root-base-extend-line-padding-heading);
-  /* ------------------------------------- */
-
-  /* ------------- BASE ------------------ */
-  /* --- Base cho LIGHT --- */
-  /* With @media */
-  /* ... */
-
-  /* WithOut @media */
-  /* - Định nghĩa 'line-width-heading */
-  --base-extend-light-line-width-heading: var(--root-base-extend-light-line-width-heading);
-  /* - Định nghĩa 'line-padding-heading */
-  --base-extend-light-line-padding-heading: var(--root-base-extend-light-line-padding-heading);
-  /* ---------------------- */
-
-  /* --- Base cho DARK --- */
-  /* With @media */
-  /* - Định nghĩa 'line-width-heading */
-  --base-extend-dark-media-line-width-heading: var(--base-extend-dark-line-width-heading);
-  /* - Định nghĩa 'line-padding-heading */
-  --base-extend-dark-media-line-padding-heading: var(--base-extend-dark-line-padding-heading);
-
-  /* WithOut @media */
-  /* - Định nghĩa 'line-width-heading */
-  --base-extend-dark-line-width-heading: var(--root-base-extend-dark-line-width-heading);
-  /* - Định nghĩa 'line-padding-heading */
-  --base-extend-dark-line-padding-heading: var(--root-base-extend-dark-line-padding-heading);
+  --base-extend-dark-line-padding-heading: var(--base-extend-line-padding-heading);
   /* ------------------------------------- */
 }
 
-/* --- Định nghĩa cho LIGHT --- */
-/* - With @media */
-@media (prefers-color-scheme: light) {
-  :root {
-    color-scheme: light;
-  }
-}
-
-/* - WithOut @media */
+/* --- LIGHT --- */
 :root[data-theme='light'] {
   color-scheme: light;
 
@@ -83,22 +36,8 @@
   /* - Định nghĩa 'extend-line-padding-heading */
   --extend-line-padding-heading: var(--base-extend-light-line-padding-heading);
 }
-/* ------------------------------- */
 
-/* --- Định nghĩa cho DARK --- */
-/* - With @media */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: dark;
-
-    /* - Định nghĩa 'extend-line-width-heading */
-    --extend-line-width-heading: var(--base-extend-dark-media-line-width-heading);
-    /* - Định nghĩa 'extend-line-padding-heading */
-    --extend-line-padding-heading: var(--base-extend-dark-media-line-padding-heading);
-  }
-}
-
-/* - WithOut @media */
+/* --- DARK --- */
 :root[data-theme='dark'] {
   color-scheme: dark;
 
@@ -107,7 +46,6 @@
   /* - Định nghĩa 'extend-line-padding-heading */
   --extend-line-padding-heading: var(--base-extend-dark-line-padding-heading);
 }
-/* ------------------------------- */
 
 /**
  * Shiki dual themes: github-light under data-theme, github-dark under data-theme
