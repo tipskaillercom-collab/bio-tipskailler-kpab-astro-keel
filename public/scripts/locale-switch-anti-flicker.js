@@ -6,6 +6,35 @@
 (() => {
   const LOG_PREFIX = '[Locale Anti-Flicker]';
 
+  // Hàm chuẩn hóa đường dẫn (bỏ dấu / ở cuối trừ trang chủ) để tránh lệch khi Astro build
+  const normalizePath = (p) => (p.length > 1 && p.endsWith('/') ? p.slice(0, -1) : p);
+
+  const updateActiveMenu = (currentLocale, defaultLocale, helpers) => {
+    const currentPath = normalizePath(window.location.pathname);
+
+    document.querySelectorAll('[data-nav-href]').forEach((link) => {
+      const rawHref = link.getAttribute('data-nav-href');
+      if (!rawHref) return;
+
+      // Tạo lại đường dẫn đầy đủ theo locale hiện tại (tương tự hàm withLocalePath ở server)
+      const fullPath = normalizePath(helpers.withLocalePath(rawHref, currentLocale, defaultLocale));
+
+      // Logic giống hệt hàm isActive trong BaseLayout
+      const active =
+        rawHref === '/'
+          ? currentPath === fullPath
+          : currentPath === fullPath || currentPath.startsWith(`${fullPath}/`);
+
+      // Cập nhật class & accessibility (thay 'active' bằng class Tailwind/CSS của bạn)
+      link.classList.toggle('active', active);
+      if (active) {
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  };
+
   // Storage wrapper hỗ trợ hạ cấp an toàn (Graceful Degradation)
   const safeGetLocale = () => {
     try {
@@ -103,6 +132,32 @@
     document.documentElement.dataset.locale = currentLocale;
   };
 
+  // STEP 6: Cập nhật trạng thái active cho menu
+  const STEP_6_UPDATE_ACTIVE_MENU = (currentLocale, defaultLocale, helpers) => {
+    const currentPath = normalizePath(window.location.pathname);
+
+    document.querySelectorAll('[data-nav-href]').forEach((link) => {
+      const rawHref = link.getAttribute('data-nav-href');
+      if (!rawHref) return;
+
+      // Dùng chính hàm buildPath có sẵn của bạn để tạo đường dẫn chuẩn theo locale
+      const segments = rawHref.split('/').filter(Boolean);
+      const fullPath = normalizePath(helpers.buildPath(currentLocale, segments, defaultLocale));
+
+      const isActive =
+        rawHref === '/'
+          ? currentPath === fullPath
+          : currentPath === fullPath || currentPath.startsWith(`${fullPath}/`);
+
+      link.classList.toggle('active', isActive);
+      if (isActive) {
+        link.setAttribute('aria-current', 'page');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+  };
+
   // Main Orchestrator
   const applyLocale = () => {
     const config = STEP_1_GET_CONFIG();
@@ -135,10 +190,14 @@
       return;
 
     STEP_5_SYNC_LOCALE_STATE(currentLocale);
+
+    STEP_6_UPDATE_ACTIVE_MENU(currentLocale, defaultLocale, helpers);
   };
 
   // Kích hoạt bộ lọc định tuyến ngay khi phân tích cú pháp mã HTML đầu tiên nhằm chặn render sai ngôn ngữ
   applyLocale();
+  // Chạy lại khi DOM render xong (vì ở <head> menu chưa tồn tại)
+  document.addEventListener('DOMContentLoaded', applyLocale);
   // Kích hoạt lại bộ lọc mỗi khi hệ thống View Transitions của Astro thực hiện tráo đổi trang (swap)
   document.addEventListener('astro:after-swap', applyLocale);
 })();

@@ -4,7 +4,7 @@
 //
 // To add a locale: copy `ja.ts`, translate the values, and register it in
 // `DICTIONARIES` below. Nothing else needs editing.
-import { SITE, type NavItem } from '../consts';
+import { getSiteConfig, type NavItem, type SocialLink } from '../consts';
 import { en, type UIKey, type UIStrings } from './en';
 import { ja } from './ja';
 import { vi } from './vi'; // Added a locale: `vi.ts`
@@ -20,6 +20,8 @@ export const DEFAULT_LOCALE: Locale = 'en';
 
 /** Registered dictionaries, keyed by BCP 47 language tag. */
 export const DICTIONARIES: Record<string, UIStrings> = { en, ja, vi }; // Registered locale: `vi.ts`
+
+const SITE = getSiteConfig('en');
 
 /** The active locale, straight from `SITE.locale`. Also the value passed to
  *  `Intl`, `<html lang>`, and the RSS `<language>` element. */
@@ -87,7 +89,9 @@ export const useTranslations = (locale: Locale = SITE.locale) => {
   const navLabel = (item: NavItem): string =>
     item.label !== undefined ? item.label : t(item.labelKey);
 
-  return { t, formatDate, navLabel, readingTime, locale };
+  const socialLabel = (item: SocialLink): string => t(item.labelKey);
+
+  return { t, formatDate, navLabel, readingTime, socialLabel, locale };
 };
 
 /**

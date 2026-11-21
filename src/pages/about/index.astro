@@ -4,18 +4,26 @@
 // translator isn't handed someone else's biography, and you don't have to open
 // a dictionary file to edit your own about page.
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { SITE } from '../../consts';
+import { getSiteConfig } from '../../consts';
 import { type Locale, locale as defaultLocale, useTranslations } from '../../i18n';
+import { useWithBaseWithLocale } from '../../lib/url';
 
-// Lấy locale từ Astro.params, fallback về defaultLocale
-const locale = (Astro.params.locale ?? defaultLocale) as Locale;
-// Sử dụng useTranslations với locale của trang hiện tại
+interface Props {
+  locale?: Locale;
+}
+
+const { locale: propLocale } = Astro.props as Props;
+const locale = (propLocale ?? Astro.params.locale ?? defaultLocale) as Locale;
 const { t } = useTranslations(locale);
+const SITE = getSiteConfig(locale);
+const { withBase } = useWithBaseWithLocale(locale);
 ---
 
 <BaseLayout
   title={t('about.title')}
-  description={`About the author behind this ${SITE.title} site.`}
+  description={t('about.title', { title: SITE.title })} // TODO: 'A measured profile for the person behind the work'
+  ogType="website"
+  image={withBase('/og/about/index.png')}
 >
   <section class="page-head section">
     <p class="eyebrow">{t('about.eyebrow')}</p>

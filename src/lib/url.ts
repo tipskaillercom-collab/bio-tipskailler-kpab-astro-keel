@@ -1,4 +1,4 @@
-import { locale as defaultLocale, locales } from '../i18n';
+import { locale as defaultLocale, locales, type Locale } from '../i18n';
 
 const base = import.meta.env.BASE_URL;
 
@@ -16,20 +16,20 @@ export function withBase(path: string): string {
 /**
  * Hàm hỗ trợ nội bộ xử lý đa ngôn ngữ và bóc tách locale cũ.
  */
-export function withLocalePath(path: string, forcedLocale?: string): string {
+export function withLocalePath(path: string, forcedLocale?: Locale): string {
   let cleanPath = path.startsWith('/') ? path : `/${path}`;
 
   // 1. Tự động tìm xem URL truyền vào có sẵn locale chưa
   const segments = cleanPath.split('/').filter(Boolean);
   let detectedLocale: string | undefined = undefined;
 
-  if (segments.length > 0 && locales.includes(segments[0] as any)) {
+  if (segments.length > 0 && locales.includes(segments[0] as Locale)) {
     detectedLocale = segments.shift();
     cleanPath = `/${segments.join('/')}`;
   }
 
   // 2. Xác định Locale cuối cùng
-  const isForcedLocaleValid = forcedLocale && locales.includes(forcedLocale as any);
+  const isForcedLocaleValid = forcedLocale && locales.includes(forcedLocale as Locale);
   const finalLocale = isForcedLocaleValid ? forcedLocale : (detectedLocale ?? defaultLocale);
 
   // 3. Tạo đường dẫn chứa tiền tố ngôn ngữ (Ẩn nếu là ngôn ngữ mặc định)
@@ -45,7 +45,7 @@ export function withLocalePath(path: string, forcedLocale?: string): string {
  * Giúp gọi `withBase` trong file .astro mà tự động gắn locale của trang hiện tại,
  * đồng thời vẫn cho phép override ép buộc locale nếu cần thiết.
  */
-export const useWithBaseWithLocale = (currentLocale?: string) => {
+export const useWithBaseWithLocale = (currentLocale?: Locale) => {
   const targetLocale = currentLocale ?? defaultLocale;
 
   return {
@@ -53,7 +53,7 @@ export const useWithBaseWithLocale = (currentLocale?: string) => {
      * Hàm withBase phiên bản đa ngôn ngữ, gắn chặt với locale của trang.
      * Cách dùng: withBase('/blog/post-1') hoặc truyền ép buộc withBase('/blog/post-1', 'vi')
      */
-    withBase: (path: string, overrideLocale?: string) =>
+    withBase: (path: string, overrideLocale?: Locale) =>
       withLocalePath(path, overrideLocale ?? targetLocale),
   };
 };

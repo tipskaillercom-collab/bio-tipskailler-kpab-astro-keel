@@ -2,66 +2,28 @@
 import { getCollection } from 'astro:content';
 import { alternateLocales } from '../../../i18n';
 import RootSlugWorkPage from '../../works/[slug].astro';
+import { toCollectionSlug } from '../../../helpers/commons';
 
-// [{ params, props }, { params, props }]
-// export async function getStaticPaths() {
-//   const entries = await getCollection('works');
-//   const paths = [];
-
-//   // Quét qua từng ngôn ngữ phụ (ja, vi...)
-//   for (const alternateLocale of alternateLocales) {
-//     // Quét qua từng bài viết để lấy ID của slug
-//     for (const entry of entries) {
-//       paths.push({
-//         params: {
-//           locale: alternateLocale,
-//           slug: entry.id,
-//         },
-//         props: {
-//           locale: alternateLocale,
-//           entry: entry, // Truyền tiếp cục dữ liệu bài viết vào cho file gốc xài
-//         },
-//       });
-//     }
-//   }
-//   return paths;
-// }
-
-// [{ params, props }, { params, props }]
-// export async function getStaticPaths() {
-//   const entries = await getCollection('works');
-
-//   return alternateLocales.flatMap((alternateLocale) =>
-//     entries.map((entry) => ({
-//       params: { locale: alternateLocale, slug: entry.id },
-//       props: { locale: alternateLocale, entry },
-//     })),
-//   );
-// }
-
-// [{ params, props }, { params, props }]
 export async function getStaticPaths() {
   const entries = await getCollection('works');
 
-  return alternateLocales.flatMap((alternateLocale) => {
-    // Quét qua từng bài viết để lấy ID của slug
-    return entries.map((entry) => {
-      return {
+  return alternateLocales.flatMap((alternateLocale) =>
+    entries
+      .filter((entry) => entry.id.startsWith(`${alternateLocale}/`))
+      .map((entry) => ({
         params: {
           locale: alternateLocale,
-          slug: entry.id,
+          slug: toCollectionSlug(entry.id, alternateLocale),
         },
         props: {
           locale: alternateLocale,
-          entry: entry, // Truyền tiếp cục dữ liệu bài viết vào cho file gốc xài
+          entry,
         },
-      };
-    });
-  });
+      })),
+  );
 }
 
 const { locale, entry } = Astro.props;
 ---
 
-<!-- Gọi component RootSlugWorkPage và truyền locale vào qua props -->
 <RootSlugWorkPage locale={locale} entry={entry} />

@@ -9,18 +9,15 @@ import '../styles/global.css';
 import '../styles/global-overrides.css';
 import '../styles/global-extended.css';
 import '../styles/global-addons.css';
-import { ClientRouter } from 'astro:transitions';
-import { withBase } from '../lib/url';
-import { SITE, NAV_ITEMS } from '../consts';
-import { locale as defaultLocale, useTranslations, type Locale } from '../i18n';
 import CodeCopy from '../components/CodeCopy.astro';
 import SocialLinks from '../components/SocialLinks.astro';
-import { getLocaleHelpersScript } from '../scripts/locale-switch/init-locale-switch';
 import ThemeToggle from '../components/ThemeToggle.astro';
 import LocaleToggle from '../components/LocaleToggle.astro';
-
-// Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
-const localeHelpersInlineScript = getLocaleHelpersScript('__clientLocaleSwitchHelper');
+import { ClientRouter } from 'astro:transitions';
+import { withLocalePath, withBase } from '../lib/url';
+import { getSiteConfig, NAV_ITEMS } from '../consts';
+import { locale as defaultLocale, useTranslations, type Locale } from '../i18n';
+import { getLocaleHelpersScript } from '../scripts/locale-switch/init-locale-switch';
 
 interface Props {
   title?: string;
@@ -29,14 +26,24 @@ interface Props {
   image?: string;
 }
 
+// Khởi tạo helper ở phía server để chuẩn bị chuyển đổi định dạng
+const localeHelpersInlineScript = getLocaleHelpersScript('__clientLocaleSwitchHelper');
+
 // Lấy locale từ Astro.params, fallback về defaultLocale
 const locale = (Astro.params.locale ?? defaultLocale) as Locale;
+
 // Sử dụng useTranslations với locale của trang hiện tại
 const { navLabel, t } = useTranslations(locale);
 
+const SITE = getSiteConfig(locale);
 const siteName = SITE.title;
 
-const { title = siteName, description = SITE.description, ogType = 'website', image } = Astro.props;
+const {
+  title = siteName,
+  description = SITE.description,
+  ogType = 'website',
+  image,
+} = Astro.props as Props;
 
 // `Astro.site` comes from `site` in astro.config.mjs; fall back to the
 // request URL during dev so canonical/OG links still resolve.
@@ -47,27 +54,32 @@ const fullTitle = title === siteName ? title : `${title} — ${siteName}`;
 
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) => {
-  const full = withBase(href);
+  const full = withLocalePath(href, locale);
   return href === '/' ? currentPath === full : currentPath.startsWith(full);
 };
 ---
 
 <!doctype html>
+<!-- // TODO: Kiểm tra xem đổi ngôn ngữ thì thằng này có đổi theo không? -->
 <html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <!-- // TODO: Đổi favicon.svg -->
     <link rel="icon" type="image/svg+xml" href={withBase('/favicon.svg')} />
+    <!-- // TODO: Đổi favicon.ico -->
     <link rel="icon" href={withBase('/favicon.ico')} />
     <link rel="canonical" href={canonicalURL} />
+    <!-- // TODO: Sitemap for 3 langs -->
     <link rel="sitemap" href={withBase('/sitemap-index.xml')} />
+    <!-- // TODO: RSS for 3 langs -->
     <link rel="alternate" type="application/rss+xml" title={siteName} href={withBase('/rss.xml')} />
     <title>{fullTitle}</title>
-
     {/* Astro comment syntax — an HTML comment here would ship on every page. */}
     {/* Open Graph */}
+    <!-- // TODO: OG for 3 langs -->
     <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:title" content={fullTitle} />
@@ -76,18 +88,16 @@ const isActive = (href: string) => {
     {/* Open Graph wants `ja_JP`, not the `ja-JP` of `<html lang>`. */}
     <meta property="og:locale" content={locale.replace('-', '_')} />
     {imageURL && <meta property="og:image" content={imageURL} />}
-
     {/* Twitter */}
+    <!-- // TODO: Twitter for 3 langs -->
     <meta name="twitter:card" content={imageURL ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     {imageURL && <meta name="twitter:image" content={imageURL} />}
     <slot name="head" />
     <ClientRouter />
-
     <!-- Script tĩnh chặn nhấp nháy giao diện (Anti-Flicker) chạy trước khi paint -->
     <script is:inline src="/scripts/theme-init-anti-flicker.js"></script>
-
     <!-- Đưa bộ thư viện helper dạng chuỗi vào môi trường runtime của trình duyệt -->
     <script is:inline set:html={localeHelpersInlineScript} />
     <!-- Script chặn render sai ngôn ngữ ngay trước khi trình duyệt vẽ giao diện (Anti-Flicker) -->
@@ -95,13 +105,21 @@ const isActive = (href: string) => {
   </head>
   <body>
     <header class="site-header">
-      <a class="brand" href={withBase('/')} aria-label={t('nav.brandHome', { site: siteName })}>
+      <a
+        class="brand"
+        href={withLocalePath('/', locale)}
+        aria-label={t('nav.brandHome', { site: siteName })}
+      >
         <span class="brand-mark" aria-hidden="true"></span>
         <span>{siteName}</span>
       </a>
       <nav class="site-nav" aria-label={t('nav.label')}>
         {NAV_ITEMS.map((item) => (
-          <a href={withBase(item.href)} aria-current={isActive(item.href) ? 'page' : undefined}>
+          <a
+            href={withLocalePath(item.href, locale)}
+            data-nav-href={item.href}
+            aria-current={isActive(item.href) ? 'page' : undefined}
+          >
             {navLabel(item)}
           </a>
         ))}
@@ -120,9 +138,9 @@ const isActive = (href: string) => {
     <footer class="site-footer">
       <p>{SITE.footerText}</p>
       <div class="footer-links">
-        <a href={withBase('/blog/')}>{t('footer.notes')}</a>
-        <a href="https://almanac.p4ni.com" target="_blank" rel="noopener noreferrer">
-          Almanac ↗
+        <a href={withLocalePath('/blog/', locale)}>{t('footer.notes')}</a>
+        <a href="https://tipskailler.com" target="_blank" rel="noopener noreferrer">
+          Tipskailler ↗
         </a>
       </div>
       <SocialLinks locale={locale} />

@@ -26,6 +26,13 @@ export const en = {
     <path d="M12,0 V24 M0,12 H24" stroke="#C8102E" stroke-width="3.2" />
   `,
 
+  // Social
+  'social.x': 'X',
+  'social.linkedin': 'LinkedIn',
+  'social.github': 'GitHub',
+  'social.email-contact': 'Email Contact',
+  'social.rss-feed': 'RSS Feed',
+
   // Header, footer, and other chrome
   'nav.home': 'Home',
   'nav.about': 'About',
@@ -62,6 +69,8 @@ export const en = {
 
   // Blog index
   'blog.title': 'Blog',
+  'blog.pageDescription':
+    'Notes and writing — {title}, a minimal portfolio and blog theme for Astro.',
   'blog.titlePaged': 'Blog · Page {page}',
   'blog.eyebrow': 'Blog',
   'blog.listLabel': 'Blog posts',
@@ -103,6 +112,7 @@ export const en = {
 
   // Works
   'works.title': 'Works',
+  'works.description': 'Selected projects and case studies',
   'works.eyebrow': 'Works',
   'works.listLabel': 'Selected works',
   'work.eyebrow': 'Work',
@@ -112,11 +122,13 @@ export const en = {
 
   // About — section labels only; the biography copy lives in about/index.astro
   'about.title': 'About',
+  'about.description': 'About the author behind this {title} site.',
   'about.eyebrow': 'About',
   'about.ledgerLabel': 'Experience summary',
 
   // Search
   'search.title': 'Search',
+  'search.description': 'Search posts and works',
   'search.eyebrow': 'Search',
   'search.sectionLabel': 'Site search',
   'search.fallback':

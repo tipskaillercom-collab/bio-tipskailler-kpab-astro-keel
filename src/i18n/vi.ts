@@ -12,6 +12,13 @@ export const vi: UIStrings = {
 fill="#FFFF00" />
   `,
 
+  // Social
+  'social.x': 'X',
+  'social.linkedin': 'LinkedIn',
+  'social.github': 'GitHub',
+  'social.email-contact': 'Liên hệ qua Email',
+  'social.rss-feed': 'Nguồn cấp RSS',
+
   // Header, footer, and other chrome
   'nav.home': 'Trang chủ',
   'nav.about': 'Giới thiệu',
@@ -48,6 +55,8 @@ fill="#FFFF00" />
 
   // Blog index
   'blog.title': 'Nhật ký Blog',
+  'blog.pageDescription':
+    'Ghi chú và bài viết — {title}, giao diện portfolio và blog tối giản dành cho Astro.',
   'blog.titlePaged': 'Nhật ký Blog · Trang {page}',
   'blog.eyebrow': 'Nhật ký Blog',
   'blog.listLabel': 'Danh sách bài viết',
@@ -85,6 +94,7 @@ fill="#FFFF00" />
 
   // Works
   'works.title': 'Dự án',
+  'works.description': 'Các dự án tiêu biểu và nghiên cứu chuyên sâu',
   'works.eyebrow': 'Dự án',
   'works.listLabel': 'Dự án tiêu biểu',
   'work.eyebrow': 'Dự án',
@@ -94,11 +104,13 @@ fill="#FFFF00" />
 
   // About
   'about.title': 'Giới thiệu',
+  'about.description': 'Giới thiệu về tác giả đứng sau trang {title}.',
   'about.eyebrow': 'Giới thiệu',
   'about.ledgerLabel': 'Tóm tắt kinh nghiệm',
 
   // Search
   'search.title': 'Tìm kiếm',
+  'search.description': 'Tìm kiếm bài viết và dự án',
   'search.eyebrow': 'Tìm kiếm',
   'search.sectionLabel': 'Tìm kiếm trang web',
   'search.fallback':

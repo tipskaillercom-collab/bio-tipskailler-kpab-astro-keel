@@ -1,8 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { withBase } from '../lib/url';
-import { DICTIONARIES, DEFAULT_LOCALE, type UIStrings } from '../i18n';
-import { SITE } from '../consts';
+import { withLocalePath } from '../lib/url';
+import { DICTIONARIES, locale as defaultLocale, type Locale } from '../i18n';
+
+// Lấy locale từ Astro.params, fallback về defaultLocale
+const locale = (Astro.params.locale ?? defaultLocale) as Locale;
 
 // Tạo sẵn object chứa toàn bộ bản dịch của 404 để client script sử dụng
 const all404Translations = Object.fromEntries(
@@ -23,41 +25,47 @@ const all404Translations = Object.fromEntries(
 );
 
 // Mặc định ban đầu dùng ngôn ngữ hệ thống khi render tĩnh
-const defaultDict = DICTIONARIES[DEFAULT_LOCALE];
+const defaultDict = DICTIONARIES[defaultLocale];
 ---
 
 <BaseLayout title={defaultDict['notFound.title']} description={defaultDict['notFound.description']}>
   <section class="hero section">
     <!-- Thêm các thuộc tính data-i18n để JavaScript client tìm và thay thế chữ -->
-    <p class="eyebrow" data-i18n="eyebrow">{defaultDict['notFound.eyebrow']}</p>
+    <p class="eyebrow" data-i18n="eyebrow">
+      {defaultDict['notFound.eyebrow']}
+    </p>
     <h1 data-i18n="heading">{defaultDict['notFound.heading']}</h1>
-    <p class="lead" data-i18n="lead">{defaultDict['notFound.lead']}</p>
+    <p class="lead" data-i18n="lead">
+      {defaultDict['notFound.lead']}
+    </p>
 
     <div
       class="action-row"
       data-i18n-attr="aria-label:linksLabel"
       aria-label={defaultDict['notFound.linksLabel']}
     >
-      <a class="button" data-i18n="home" href={withBase('/')}>{defaultDict['notFound.home']}</a>
-      <a class="text-link" data-i18n="blog" href={withBase('/blog/')}
-        >{defaultDict['notFound.blog']}</a
-      >
-      <a class="text-link" data-i18n="works" href={withBase('/works/')}
-        >{defaultDict['notFound.works']}</a
-      >
+      <a class="button" data-i18n="home" href={withLocalePath('/', locale)}>
+        {defaultDict['notFound.home']}
+      </a>
+      <a class="text-link" data-i18n="blog" href={withLocalePath('/blog/', locale)}>
+        {defaultDict['notFound.blog']}
+      </a>
+      <a class="text-link" data-i18n="works" href={withLocalePath('/works/', locale)}>
+        {defaultDict['notFound.works']}
+      </a>
     </div>
   </section>
 </BaseLayout>
 
 <!-- Nhúng thẻ script cấu hình dữ liệu và tự động thay đổi ngôn ngữ ngay khi trang tải -->
-<script define:vars={{ all404Translations, DEFAULT_LOCALE }}>
+<script define:vars={{ all404Translations, defaultLocale }}>
   // 1. Phân tích URL hiện tại trên thanh địa chỉ của trình duyệt
   const pathSegments = window.location.pathname.split('/').filter(Boolean);
 
   // Kiểm tra xem phân đoạn đầu tiên có trùng với ngôn ngữ nào không (vi, ja, en)
-  const currentLang = pathSegments[0] in all404Translations ? pathSegments[0] : DEFAULT_LOCALE;
+  const currentLang = pathSegments[0] in all404Translations ? pathSegments[0] : defaultLocale;
 
-  if (currentLang !== DEFAULT_LOCALE) {
+  if (currentLang !== defaultLocale) {
     const dict = all404Translations[currentLang];
 
     // Update thẻ tiêu đề và meta của trang
