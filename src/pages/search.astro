@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { useWithBaseWithLocale } from '../lib/url';
+import { withBase } from '../lib/url';
 import { getSiteConfig } from '../consts';
 import { type Locale, locale as defaultLocale, useTranslations } from '../i18n';
 
@@ -12,10 +12,9 @@ const { locale: propLocale } = Astro.props as Props;
 const locale = (propLocale ?? Astro.params.locale ?? defaultLocale) as Locale;
 const { t } = useTranslations(locale);
 const SITE = getSiteConfig(locale);
-const { withBase } = useWithBaseWithLocale(locale);
 
-// const bundlePath = withBase('/pagefind/');
-const bundlePath = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/pagefind/`;
+const bundlePath = withBase('/pagefind/');
+// const bundlePath = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/pagefind/`;
 ---
 
 <BaseLayout title={t('search.title')} description={`${t('search.description')} — ${SITE.title}.`}>
