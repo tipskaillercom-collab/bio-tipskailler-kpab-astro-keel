@@ -1,27 +1,37 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { withBase } from '../../lib/url';
-import { SITE } from '../../consts';
+import { useWithBaseWithLocale } from '../../lib/url';
+import { getSiteConfig } from '../../consts';
 import { type Locale, locale as defaultLocale, useTranslations } from '../../i18n';
+import { toCollectionSlug } from '../../helpers/commons';
 
-const { locale: propLocale } = Astro.props as { locale?: string };
 // Lấy locale từ Props, fallback về defaultLocale
-const locale = (propLocale ?? defaultLocale) as Locale;
+const locale = (Astro.props.locale ?? defaultLocale) as Locale;
+
 // Sử dụng useTranslations với locale của trang hiện tại
 const { t } = useTranslations(locale);
+const SITE = getSiteConfig(locale);
+const { withBase } = useWithBaseWithLocale(locale);
 
-const works = (await getCollection('works')).sort((a, b) => {
-  const orderA = a.data.order ?? Number.MAX_SAFE_INTEGER;
-  const orderB = b.data.order ?? Number.MAX_SAFE_INTEGER;
-  if (orderA !== orderB) return orderA - orderB;
-  return b.data.publishDate.valueOf() - a.data.publishDate.valueOf();
-});
+const works = (await getCollection('works', ({ id }) => id.startsWith(`${locale}/`)))
+  .sort((a, b) => {
+    const orderA = a.data.order ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.data.order ?? Number.MAX_SAFE_INTEGER;
+    if (orderA !== orderB) return orderA - orderB;
+    return b.data.publishDate.valueOf() - a.data.publishDate.valueOf();
+  })
+  .map((work) => ({
+    ...work,
+    slug: toCollectionSlug(work.id, locale),
+  }));
 ---
 
 <BaseLayout
   title={t('works.title')}
-  description={`Selected projects and case studies — ${SITE.title}.`}
+  description={`${t('works.description')} — ${SITE.title}.`}
+  ogType="website"
+  image={withBase('/og/works/index.png')}
 >
   <section class="page-head section">
     <p class="eyebrow">{t('works.eyebrow')}</p>
@@ -34,24 +44,22 @@ const works = (await getCollection('works')).sort((a, b) => {
 
   <section class="section" aria-label={t('works.listLabel')}>
     <div class="work-list">
-      {
-        works.map((work) => (
-          <article class="work-card">
-            <p class="entry-meta">
-              {work.data.tech.map((tech, index) => (
-                <>
-                  {index > 0 && <span>/</span>}
-                  <a href={withBase(`/tech/${tech.toLowerCase()}/`)}>{tech}</a>
-                </>
-              ))}
-            </p>
-            <h2>
-              <a href={withBase(`/works/${work.id}/`)}>{work.data.title}</a>
-            </h2>
-            <p>{work.data.description}</p>
-          </article>
-        ))
-      }
+      {works.map((work) => (
+        <article class="work-card">
+          <p class="entry-meta">
+            {work.data.tech.map((tech, index) => (
+              <>
+                {index > 0 && <span>/</span>}
+                <a href={withBase(`/tech/${tech.toLowerCase()}/`)}>{tech}</a>
+              </>
+            ))}
+          </p>
+          <h2>
+            <a href={withBase(`/works/${work.slug}/`)}>{work.data.title}</a>
+          </h2>
+          <p>{work.data.description}</p>
+        </article>
+      ))}
     </div>
   </section>
 </BaseLayout>

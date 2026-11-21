@@ -1,0 +1,68 @@
+---
+/**
+ * File: src/components/LocaleToggle.astro
+ * Mô tả: Component nút chuyển đổi ngôn ngữ (Locale Switcher) dạng vòng tròn SVG.
+ * Tự động chia múi hình quạt và render các lá cờ dựa trên danh sách `locales` và `flagMarkupMap` từ i18n.
+ */
+import { locales, flagMarkupMap } from '../i18n';
+
+interface Props {
+  label?: string;
+}
+
+const { label = 'Switch language' } = Astro.props;
+
+// ===============================================================
+// HÀM TẠO SVG PATH VÀ CLIP-PATH TỰ ĐỘNG THEO SỐ LƯỢNG LOCALES
+// ===============================================================
+const totalLocales = locales.length;
+const anglePerSlice = 360 / totalLocales;
+
+/**
+ * Tính toán đường dẫn hình quạt SVG (Pie Slice Path) từ góc bắt đầu đến góc kết thúc
+ */
+const getSlicePath = (index: number) => {
+  const startAngle = index * anglePerSlice - 90; // Xoay 90 độ để múi đầu tiên bắt đầu từ đỉnh (12h)
+  const endAngle = (index + 1) * anglePerSlice - 90;
+
+  const startRad = (startAngle * Math.PI) / 180;
+  const endRad = (endAngle * Math.PI) / 180;
+
+  const x1 = (12 + 12 * Math.cos(startRad)).toFixed(2);
+  const y1 = (12 + 12 * Math.sin(startRad)).toFixed(2);
+  const x2 = (12 + 12 * Math.cos(endRad)).toFixed(2);
+  const y2 = (12 + 12 * Math.sin(endRad)).toFixed(2);
+
+  const largeArcFlag = anglePerSlice > 180 ? 1 : 0;
+
+  return `M12,12 L${x1},${y1} A12,12 0 ${largeArcFlag},1 ${x2},${y2} Z`;
+};
+---
+
+<button type="button" class="lang-toggle" aria-label={label} data-locale-toggle>
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <defs>
+      {locales.map((loc, index) => (
+        <clipPath id={`clip-${loc}`}>
+          <path d={getSlicePath(index)} />
+        </clipPath>
+      ))}
+    </defs>
+
+    {locales.map((loc) => (
+      <g
+        class={`flag-part flag-${loc}`}
+        clip-path={`url(#clip-${loc})`}
+        set:html={flagMarkupMap[loc]}
+      />
+    ))}
+
+    {locales.map((_, index) => {
+      const angle = index * anglePerSlice - 90;
+      const rad = (angle * Math.PI) / 180;
+      const x = (12 + 12 * Math.cos(rad)).toFixed(2);
+      const y = (12 + 12 * Math.sin(rad)).toFixed(2);
+      return <path d={`M12,12 L${x},${y}`} stroke="var(--color-line-strong)" stroke-width="0.8" />;
+    })}
+  </svg>
+</button>

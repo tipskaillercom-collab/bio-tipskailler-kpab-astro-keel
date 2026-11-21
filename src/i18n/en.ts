@@ -17,6 +17,22 @@
 // is what lets other locales satisfy `UIStrings`.
 
 export const en = {
+  /** SVG markup lá cờ hiển thị trên nút đổi ngôn ngữ */
+  flagSvg: `
+    <rect width="24" height="24" fill="#012169" />
+    <path d="M0,0 L24,24 M24,0 L0,24" stroke="#fff" stroke-width="3.5" />
+    <path d="M0,0 L24,24 M24,0 L0,24" stroke="#C8102E" stroke-width="1.8" />
+    <path d="M12,0 V24 M0,12 H24" stroke="#fff" stroke-width="5.5" />
+    <path d="M12,0 V24 M0,12 H24" stroke="#C8102E" stroke-width="3.2" />
+  `,
+
+  // Social
+  'social.x': 'X',
+  'social.linkedin': 'LinkedIn',
+  'social.github': 'GitHub',
+  'social.email-contact': 'Email Contact',
+  'social.rss-feed': 'RSS Feed',
+
   // Header, footer, and other chrome
   'nav.home': 'Home',
   'nav.about': 'About',
@@ -26,6 +42,7 @@ export const en = {
   'nav.label': 'Main navigation',
   'nav.brandHome': '{site} home',
   'theme.toggle': 'Toggle color theme',
+  'locale.switch': 'Switch language',
   'footer.notes': 'Notes',
   'social.label': 'Social links',
 
@@ -52,6 +69,8 @@ export const en = {
 
   // Blog index
   'blog.title': 'Blog',
+  'blog.pageDescription':
+    'Notes and writing — {title}, a minimal portfolio and blog theme for Astro.',
   'blog.titlePaged': 'Blog · Page {page}',
   'blog.eyebrow': 'Blog',
   'blog.listLabel': 'Blog posts',
@@ -93,6 +112,7 @@ export const en = {
 
   // Works
   'works.title': 'Works',
+  'works.description': 'Selected projects and case studies',
   'works.eyebrow': 'Works',
   'works.listLabel': 'Selected works',
   'work.eyebrow': 'Work',
@@ -102,11 +122,13 @@ export const en = {
 
   // About — section labels only; the biography copy lives in about/index.astro
   'about.title': 'About',
+  'about.description': 'About the author behind this {title} site.',
   'about.eyebrow': 'About',
   'about.ledgerLabel': 'Experience summary',
 
   // Search
   'search.title': 'Search',
+  'search.description': 'Search posts and works',
   'search.eyebrow': 'Search',
   'search.sectionLabel': 'Site search',
   'search.fallback':

@@ -2,8 +2,8 @@ import type { APIContext } from 'astro';
 import { withBase } from '../lib/url';
 
 export async function GET(context: APIContext) {
-  // Lấy site từ astro.config.mjs, nếu chưa set sẽ dùng fallback
-  const siteUrl = context.site ?? 'https://bio.tipskailler.com';
+  // Fallback về context.url.origin nếu chưa cấu hình `site` trong astro.config.mjs
+  const siteUrl = context.site ?? new URL(context.url.origin);
   const sitemapURL = new URL(withBase('/sitemap-index.xml'), siteUrl).href;
 
   const content = `User-agent: *

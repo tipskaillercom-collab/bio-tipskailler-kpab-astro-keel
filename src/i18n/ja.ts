@@ -6,6 +6,18 @@
 import type { UIStrings } from './en';
 
 export const ja: UIStrings = {
+  flagSvg: `
+    <rect width="24" height="24" fill="#ffffff" />
+    <circle cx="12" cy="18.5" r="3.6" fill="#BC002D" />
+  `,
+
+  // Social
+  'social.x': 'X',
+  'social.linkedin': 'LinkedIn',
+  'social.github': 'GitHub',
+  'social.email-contact': 'メールで連絡',
+  'social.rss-feed': 'RSSフィード',
+
   // Header, footer, and other chrome
   'nav.home': 'ホーム',
   'nav.about': 'プロフィール',
@@ -15,6 +27,7 @@ export const ja: UIStrings = {
   'nav.label': 'メインナビゲーション',
   'nav.brandHome': '{site} のホーム',
   'theme.toggle': '配色テーマを切り替える',
+  'locale.switch': '言語を切り替える',
   'footer.notes': 'ノート',
   'social.label': 'ソーシャルリンク',
 
@@ -41,6 +54,8 @@ export const ja: UIStrings = {
 
   // Blog index
   'blog.title': 'ブログ',
+  'blog.pageDescription':
+    'ノートと記事 — {title}、Astro向けのミニマルなポートフォリオ＆ブログテーマ。',
   'blog.titlePaged': 'ブログ · {page} ページ目',
   'blog.eyebrow': 'ブログ',
   'blog.listLabel': 'ブログ記事',
@@ -79,6 +94,7 @@ export const ja: UIStrings = {
 
   // Works
   'works.title': '制作物',
+  'works.description': '厳選されたプロジェクトとケーススタディ',
   'works.eyebrow': '制作物',
   'works.listLabel': '厳選した制作物',
   'work.eyebrow': '制作物',
@@ -88,11 +104,13 @@ export const ja: UIStrings = {
 
   // About
   'about.title': 'プロフィール',
+  'about.description': '{title} サイトを運営する作者について。',
   'about.eyebrow': 'プロフィール',
   'about.ledgerLabel': '経歴の概要',
 
   // Search
   'search.title': '検索',
+  'search.description': '記事や制作実績を検索',
   'search.eyebrow': '検索',
   'search.sectionLabel': 'サイト内検索',
   'search.fallback':

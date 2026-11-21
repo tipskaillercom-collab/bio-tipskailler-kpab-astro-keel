@@ -1,0 +1,27 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import RootBlogPage from '../../blog/[...page].astro';
+import { alternateLocales, type Locale } from '../../../i18n';
+
+export const getStaticPaths = (async ({ paginate }) => {
+  const allPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
+  );
+
+  return alternateLocales.flatMap((loc) => {
+    const posts = allPosts.filter((post) => post.id.startsWith(`${loc}/`));
+    const allTags = [...new Set(posts.flatMap((post) => post.data.tags))].sort((a, b) =>
+      a.localeCompare(b),
+    );
+
+    return paginate(posts, {
+      params: { locale: loc as Locale },
+      pageSize: 10,
+      props: { locale: loc as Locale, allTags },
+    });
+  });
+}) satisfies GetStaticPaths;
+---
+
+<RootBlogPage {...Astro.props} />

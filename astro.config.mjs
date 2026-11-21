@@ -10,7 +10,8 @@ import path from 'node:path';
 
 // Nạp các biến từ file .env vào môi trường
 const prefixEnv = 'APP_';
-const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), 'prefixEnv');
+const env = loadEnv(process.env.NODE_ENV || 'development', process.cwd(), prefixEnv);
+
 const {
   APP_ENV,
   APP_PRODUCTION_URL,
@@ -18,6 +19,7 @@ const {
   APP_DEVELOPMENT_URL,
   APP_DEVELOPMENT_BASE,
 } = env;
+
 const isProd = APP_ENV === 'production';
 const APP_URL = isProd ? APP_PRODUCTION_URL : APP_DEVELOPMENT_URL;
 const APP_BASE = isProd ? APP_PRODUCTION_BASE : APP_DEVELOPMENT_BASE;

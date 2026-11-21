@@ -3,68 +3,14 @@ import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import satori from 'satori';
 import sharp from 'sharp';
-import { locales, locale as defaultLocale, useTranslation } from '../i18n';
-import { SITE } from '../consts';
-
-// Build-time generated Open Graph images for every blog post and work entry,
-// rendered in the theme's light palette (see global.css tokens). The static
-// `public/og.jpg` remains the site-wide fallback for all other pages.
+import { getSiteConfig } from '../consts';
+import { type Locale, locale as defaultLocale, useTranslations, locales } from '../i18n';
 
 export interface OgProps {
   title: string;
   description: string;
   kind: string;
-  locale: string;
-}
-
-// Hàm lấy tất cả paths cho cả bản default và bản multi-locale
-export async function getOgStaticPaths() {
-  const blog = await getCollection('blog', ({ data }) => !data.draft);
-  const works = await getCollection('works');
-
-  // Tất cả các ngôn ngữ (default + alternate)
-  // const allLocales = [defaultLocale, ...alternateLocales];
-  const allLocales = locales;
-
-  return allLocales.flatMap((locale) => {
-    const { t } = useTranslation(locale);
-
-    // Có thể tùy chỉnh nhãn kind dựa theo locale hoặc từ điển i18n
-    const blogKindLabel = t('blog.title') || 'Blog';
-    const workKindLabel = t('works.title') || 'Work';
-
-    const blogPaths = blog.map((entry) => ({
-      params: {
-        locale: locale === defaultLocale ? undefined : locale,
-        collection: 'blog',
-        slug: entry.id,
-      },
-      props: {
-        title: entry.data.title,
-        description: entry.data.description,
-        // kind: `${blogKindLabel} — ${SITE.title}`,
-        kind: `${blogKindLabel}`,
-        locale,
-      } satisfies OgProps,
-    }));
-
-    const workPaths = works.map((entry) => ({
-      params: {
-        locale: locale === defaultLocale ? undefined : locale,
-        collection: 'works',
-        slug: entry.id,
-      },
-      props: {
-        title: entry.data.title,
-        description: entry.data.description,
-        // kind: `${workKindLabel} — ${SITE.title}`,
-        kind: `${workKindLabel}`,
-        locale,
-      } satisfies OgProps,
-    }));
-
-    return [...blogPaths, ...workPaths];
-  });
+  siteTitle: string;
 }
 
 // Satori has no oklch() support, so these are hex equivalents of the
@@ -86,7 +32,6 @@ const font = (pkgPath: string) => readFile(require.resolve(pkgPath));
 // render them as tofu in every share image. Post titles in a non-Latin script
 // hit the same limit: install a face that covers them (e.g.
 // `@fontsource/noto-sans-jp`) and point the paths below at it.
-// Nạp sẵn font
 const [fraunces, publicSans, frauncesVN, notoSansJP] = await Promise.all([
   font('@fontsource/fraunces/files/fraunces-latin-600-normal.woff'),
   font('@fontsource/public-sans/files/public-sans-latin-400-normal.woff'),
@@ -97,9 +42,128 @@ const [fraunces, publicSans, frauncesVN, notoSansJP] = await Promise.all([
 const truncate = (text: string, max: number) =>
   text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
 
-export async function renderOgImage(props: OgProps) {
-  const { title, description, kind } = props;
+type OgSourceItem = {
+  id: string;
+  title: string;
+  description: string;
+};
 
+// Helper lọc đúng bài theo locale và làm sạch slug (bỏ tiền tố thư mục ngôn ngữ)
+function mapEntriesByLocale(
+  entries: OgSourceItem[],
+  targetLocale: Locale,
+  collection: 'blog' | 'works' | 'about',
+  kind: string,
+  siteTitle: string,
+) {
+  const otherLocales = locales.filter((l) => l !== defaultLocale);
+
+  return entries
+    .filter((entry) => {
+      const firstSegment = entry.id.split('/')[0];
+      // Nếu bài nằm trong thư mục ngôn ngữ phụ (vd: 'en/...') thì locale của nó là 'en'
+      // Ngược lại thì thuộc về defaultLocale
+      const entryLocale = otherLocales.includes(firstSegment as Locale)
+        ? (firstSegment as Locale)
+        : defaultLocale;
+
+      return entryLocale === targetLocale;
+    })
+    .map((entry) => {
+      // Cắt bỏ tiền tố 'en/' hoặc 'ja/' nếu có để lấy slug sạch không chứa dấu '/'
+      const prefix = `${targetLocale}/`;
+      const cleanSlug = entry.id.startsWith(prefix) ? entry.id.slice(prefix.length) : entry.id;
+
+      return {
+        collection,
+        slug: cleanSlug,
+        props: {
+          title: entry.title,
+          description: entry.description,
+          kind,
+          siteTitle,
+        } satisfies OgProps,
+      };
+    });
+}
+
+// Hàm lấy danh sách entries và gắn sẵn props theo từng locale
+export async function getOgEntriesForLocale(locale: Locale) {
+  const SITE = getSiteConfig(locale);
+  const { t } = useTranslations(locale);
+
+  const blog = (await getCollection('blog', ({ data }) => !data.draft)).map((e) => ({
+    id: e.id,
+    title: e.data.title,
+    description: e.data.description,
+  }));
+
+  const works = (await getCollection('works')).map((e) => ({
+    id: e.id,
+    title: e.data.title,
+    description: e.data.description,
+  }));
+
+  const staticOgEntries = [
+    {
+      collection: 'blog' as const,
+      slug: 'index',
+      props: {
+        title: t('blog.title'),
+        description: t('blog.pageDescription'),
+        kind: t('blog.title'),
+        siteTitle: SITE.title,
+      } satisfies OgProps,
+    },
+    {
+      collection: 'works' as const,
+      slug: 'index',
+      props: {
+        title: t('works.title'),
+        description: t('works.description'),
+        kind: t('works.title'),
+        siteTitle: SITE.title,
+      } satisfies OgProps,
+    },
+    {
+      collection: 'about' as const,
+      slug: 'index',
+      props: {
+        title: t('about.title'),
+        description: t('about.description', { title: SITE.title }),
+        kind: t('about.title'),
+        siteTitle: SITE.title,
+      } satisfies OgProps,
+    },
+  ];
+
+  // const blockWorks: OgSourceItem[] = [
+  //   {
+  //     id: locale === defaultLocale ? 'index' : `${locale}/index`,
+  //     title: t('works.title'),
+  //     description: t('works.description', { title: SITE.title }),
+  //   },
+  // ];
+
+  // const about: OgSourceItem[] = [
+  //   {
+  //     id: locale === defaultLocale ? 'index' : `${locale}/index`,
+  //     title: t('about.title'),
+  //     description: t('about.description', { title: SITE.title }),
+  //   },
+  // ];
+
+  return [
+    ...mapEntriesByLocale(blog, locale, 'blog', t('blog.title'), SITE.title),
+    ...mapEntriesByLocale(works, locale, 'works', t('works.title'), SITE.title),
+    ...staticOgEntries,
+    // ...mapEntriesByLocale(blockWorks, locale, 'blockWorks', t('works.title'), SITE.title),
+    // ...mapEntriesByLocale(about, locale, 'about', t('about.title'), SITE.title),
+  ];
+}
+
+// Hàm render ảnh PNG từ OgProps (giữ nguyên bên dưới)
+export async function renderOgImage({ title, description, kind, siteTitle }: OgProps) {
   const svg = await satori(
     {
       type: 'div',
@@ -110,7 +174,7 @@ export async function renderOgImage(props: OgProps) {
           display: 'flex',
           backgroundColor: COLOR.bg,
           padding: 40,
-          // fontFamily: 'Public Sans',
+          fontFamily: 'Public Sans',
         },
         children: {
           type: 'div',
@@ -138,12 +202,8 @@ export async function renderOgImage(props: OgProps) {
                     {
                       type: 'div',
                       props: {
-                        style: {
-                          // fontFamily: 'Fraunces',
-                          fontSize: 30,
-                          color: COLOR.text,
-                        },
-                        children: SITE.title,
+                        style: { fontFamily: 'Fraunces', fontSize: 30, color: COLOR.text },
+                        children: siteTitle,
                       },
                     },
                   ],
@@ -163,7 +223,7 @@ export async function renderOgImage(props: OgProps) {
                           gap: 14,
                           marginBottom: 28,
                           color: COLOR.accent,
-                          // fontFamily: 'Fraunces',
+                          fontFamily: 'Fraunces',
                           fontSize: 24,
                           textTransform: 'uppercase',
                           letterSpacing: 4,
@@ -175,10 +235,7 @@ export async function renderOgImage(props: OgProps) {
                               style: { width: 40, height: 1, backgroundColor: COLOR.accent },
                             },
                           },
-                          {
-                            type: 'div',
-                            props: { children: kind },
-                          },
+                          { type: 'div', props: { children: kind } },
                         ],
                       },
                     },
@@ -186,7 +243,7 @@ export async function renderOgImage(props: OgProps) {
                       type: 'div',
                       props: {
                         style: {
-                          // fontFamily: 'Fraunces',
+                          fontFamily: 'Fraunces',
                           fontSize: title.length > 55 ? 54 : 64,
                           lineHeight: 1.15,
                           color: COLOR.text,

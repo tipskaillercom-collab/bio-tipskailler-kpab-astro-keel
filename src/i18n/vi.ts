@@ -6,6 +6,19 @@
 import type { UIStrings } from './en';
 
 export const vi: UIStrings = {
+  flagSvg: `
+    <rect width="24" height="24" fill="#DA251D" />
+    <polygon points="6.5,5.5 7.4,8.2 10.2,8.2 7.9,9.8 8.8,12.5 6.5,10.8 4.2,12.5 5.1,9.8 2.8,8.2 5.6,8.2"
+fill="#FFFF00" />
+  `,
+
+  // Social
+  'social.x': 'X',
+  'social.linkedin': 'LinkedIn',
+  'social.github': 'GitHub',
+  'social.email-contact': 'Liên hệ qua Email',
+  'social.rss-feed': 'Nguồn cấp RSS',
+
   // Header, footer, and other chrome
   'nav.home': 'Trang chủ',
   'nav.about': 'Giới thiệu',
@@ -15,6 +28,7 @@ export const vi: UIStrings = {
   'nav.label': 'Điều hướng chính',
   'nav.brandHome': 'Trang chủ {site}',
   'theme.toggle': 'Chuyển đổi giao diện',
+  'locale.switch': 'Chuyển đổi ngôn ngữ',
   'footer.notes': 'Ghi chú',
   'social.label': 'Liên kết mạng xã hội',
 
@@ -41,6 +55,8 @@ export const vi: UIStrings = {
 
   // Blog index
   'blog.title': 'Nhật ký Blog',
+  'blog.pageDescription':
+    'Ghi chú và bài viết — {title}, giao diện portfolio và blog tối giản dành cho Astro.',
   'blog.titlePaged': 'Nhật ký Blog · Trang {page}',
   'blog.eyebrow': 'Nhật ký Blog',
   'blog.listLabel': 'Danh sách bài viết',
@@ -78,6 +94,7 @@ export const vi: UIStrings = {
 
   // Works
   'works.title': 'Dự án',
+  'works.description': 'Các dự án tiêu biểu và nghiên cứu chuyên sâu',
   'works.eyebrow': 'Dự án',
   'works.listLabel': 'Dự án tiêu biểu',
   'work.eyebrow': 'Dự án',
@@ -87,11 +104,13 @@ export const vi: UIStrings = {
 
   // About
   'about.title': 'Giới thiệu',
+  'about.description': 'Giới thiệu về tác giả đứng sau trang {title}.',
   'about.eyebrow': 'Giới thiệu',
   'about.ledgerLabel': 'Tóm tắt kinh nghiệm',
 
   // Search
   'search.title': 'Tìm kiếm',
+  'search.description': 'Tìm kiếm bài viết và dự án',
   'search.eyebrow': 'Tìm kiếm',
   'search.sectionLabel': 'Tìm kiếm trang web',
   'search.fallback':
